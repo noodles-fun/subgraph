@@ -1,0 +1,394 @@
+enum ExecutionState {
+  UNINITIALIZED
+  REQUESTED
+  ACCEPTED
+  DISPUTED
+  REFUNDED
+  VALIDATED
+}
+
+type Visibility @entity {
+  id: String!
+  creator: Bytes # address
+  currentPrice: BigInt! # uint256
+  totalSupply: BigInt! # uint256
+  balances: [VisibilityBalance!]! @derivedFrom(field: "visibility")
+  trades: [CreditsTrade!]! @derivedFrom(field: "visibility")
+  services: [VisibilityService!]! @derivedFrom(field: "visibility")
+}
+
+type VisibilityBalance @entity {
+  id: String! # visibilityId-userAddress
+  visibility: Visibility!
+  user: Bytes! # address
+  balance: BigInt! # uint256
+}
+
+type VisibilityService @entity {
+  id: String! # serviceNonce
+  visibility: Visibility!
+  serviceType: String! # string
+  creditsCostAmount: BigInt! # uint256
+  enabled: Boolean! # bool
+  executions: [VisibilityServiceExecution!]! @derivedFrom(field: "service")
+}
+
+type VisibilityServiceExecution @entity {
+  id: String! # serviceNonce-executionNonce
+  state: ExecutionState!
+  service: VisibilityService!
+  executionNonce: BigInt! # uint256
+  requester: Bytes! # address
+  requestData: String! # string
+  responseData: String # string
+  cancelData: String # string
+  disputeData: String # string
+  resolveData: String # string
+  lastUpdated: BigInt! # uint256
+}
+
+###################
+## Events entities
+###################
+
+type CreatorFeeClaimed @entity(timeseries: true, immutable: true) {
+  id: Int8!
+  creator: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  timestamp: Timestamp
+}
+
+type CreatorVisibilitySet @entity(immutable: true) {
+  id: Bytes!
+  visibility: Visibility!
+  creator: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CreditsTrade @entity(timeseries: true, immutable: true) {
+  id: Int8!
+  from: Bytes! # address
+  visibility: Visibility!
+  amount: BigInt! # uint256
+  isBuy: Boolean! # bool
+  tradeCost: BigInt! # uint256
+  creatorFee: BigInt! # uint256
+  protocolFee: BigInt! # uint256
+  referrerFee: BigInt! # uint256
+  partnerFee: BigInt! # uint256
+  referrer: Bytes! # address
+  partner: Bytes! # address
+  newTotalSupply: BigInt! # uint256
+  newCurrentPrice: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  timestamp: Timestamp
+}
+
+type CreditsTransfer @entity(immutable: true) {
+  id: Bytes!
+  visibility: Visibility!
+  from: Bytes! # address
+  to: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DefaultAdminDelayChangeCanceled @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DefaultAdminDelayChangeScheduled @entity(immutable: true) {
+  id: Bytes!
+  newDelay: BigInt! # uint48
+  effectSchedule: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DefaultAdminTransferCanceled @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DefaultAdminTransferScheduled @entity(immutable: true) {
+  id: Bytes!
+  newAdmin: Bytes! # address
+  acceptSchedule: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ReferrerPartnerSet @entity(immutable: true) {
+  id: Bytes!
+  referrer: Bytes! # address
+  partner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleAdminChanged @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  previousAdminRole: Bytes! # bytes32
+  newAdminRole: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleGranted @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleRevoked @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesDefaultAdminDelayChangeCanceled
+  @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesDefaultAdminDelayChangeScheduled
+  @entity(immutable: true) {
+  id: Bytes!
+  newDelay: BigInt! # uint48
+  effectSchedule: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesDefaultAdminTransferCanceled @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesDefaultAdminTransferScheduled @entity(immutable: true) {
+  id: Bytes!
+  newAdmin: Bytes! # address
+  acceptSchedule: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesRoleAdminChanged @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  previousAdminRole: Bytes! # bytes32
+  newAdminRole: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesRoleGranted @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VisibilityServicesRoleRevoked @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceCreated @entity(immutable: true) {
+  id: Bytes!
+  nonce: BigInt! # uint256
+  serviceType: String! # string
+  visibility: Visibility!
+  creditsCostAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionAccepted @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  responseData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionCanceled @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  from: Bytes! # address
+  cancelData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionDisputed @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  disputeData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionRequested @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  requester: Bytes! # address
+  requestData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionResolved @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  refund: Boolean! # bool
+  resolveData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionValidated @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceUpdated @entity(immutable: true) {
+  id: Bytes!
+  nonce: BigInt! # uint256
+  enabled: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+###################
+## Stats entities
+###################
+
+type CreditsTradeGlobalStats
+  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
+  id: Int8!
+  timestamp: Timestamp!
+  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
+  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
+  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
+  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
+  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
+type CreditsTradeVisibilityStats
+  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
+  id: Int8!
+  visibility: Visibility! @group(by: ["visibility"])
+  timestamp: Timestamp!
+  maxSupply: BigInt! @aggregate(fn: "max", arg: "newTotalSupply")
+  maxPrice: BigInt! @aggregate(fn: "max", arg: "newCurrentPrice")
+  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
+  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
+  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
+  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
+  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
+type CreditsTradeFromStats
+  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
+  id: Int8!
+  from: Bytes! @group(by: ["from"])
+  timestamp: Timestamp!
+  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
+  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
+  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
+  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
+  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
+type CreditsTradeReferrerStats
+  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
+  id: Int8!
+  referrer: Bytes! @group(by: ["referrer"])
+  timestamp: Timestamp!
+  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
+  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
+  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
+  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
+  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
+type CreatorFeeClaimedStats
+  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
+  id: Int8!
+  timestamp: Timestamp!
+  total: BigInt! @aggregate(fn: "sum", arg: "amount")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
