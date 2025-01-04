@@ -102,140 +102,10 @@ type CreditsTransfer @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type DefaultAdminDelayChangeCanceled @entity(immutable: true) {
-  id: Bytes!
-
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type DefaultAdminDelayChangeScheduled @entity(immutable: true) {
-  id: Bytes!
-  newDelay: BigInt! # uint48
-  effectSchedule: BigInt! # uint48
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type DefaultAdminTransferCanceled @entity(immutable: true) {
-  id: Bytes!
-
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type DefaultAdminTransferScheduled @entity(immutable: true) {
-  id: Bytes!
-  newAdmin: Bytes! # address
-  acceptSchedule: BigInt! # uint48
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
 type ReferrerPartnerSet @entity(immutable: true) {
   id: Bytes!
   referrer: Bytes! # address
   partner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RoleAdminChanged @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  previousAdminRole: Bytes! # bytes32
-  newAdminRole: Bytes! # bytes32
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RoleGranted @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  account: Bytes! # address
-  sender: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RoleRevoked @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  account: Bytes! # address
-  sender: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesDefaultAdminDelayChangeCanceled
-  @entity(immutable: true) {
-  id: Bytes!
-
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesDefaultAdminDelayChangeScheduled
-  @entity(immutable: true) {
-  id: Bytes!
-  newDelay: BigInt! # uint48
-  effectSchedule: BigInt! # uint48
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesDefaultAdminTransferCanceled @entity(immutable: true) {
-  id: Bytes!
-
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesDefaultAdminTransferScheduled @entity(immutable: true) {
-  id: Bytes!
-  newAdmin: Bytes! # address
-  acceptSchedule: BigInt! # uint48
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesRoleAdminChanged @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  previousAdminRole: Bytes! # bytes32
-  newAdminRole: Bytes! # bytes32
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesRoleGranted @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  account: Bytes! # address
-  sender: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VisibilityServicesRoleRevoked @entity(immutable: true) {
-  id: Bytes!
-  role: Bytes! # bytes32
-  account: Bytes! # address
-  sender: Bytes! # address
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -384,9 +254,33 @@ type CreditsTradeReferrerStats
   lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
 }
 
+type CreditsTradePartnerStats
+  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
+  id: Int8!
+  partner: Bytes! @group(by: ["partner"])
+  timestamp: Timestamp!
+  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
+  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
+  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
+  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
+  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
 type CreatorFeeClaimedStats
   @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
   id: Int8!
+  timestamp: Timestamp!
+  total: BigInt! @aggregate(fn: "sum", arg: "amount")
+  count: BigInt! @aggregate(fn: "count", arg: "id")
+  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
+}
+
+type CreatorFeeClaimedCreatorStats
+  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
+  id: Int8!
+  creator: Bytes! @group(by: ["creator"])
   timestamp: Timestamp!
   total: BigInt! @aggregate(fn: "sum", arg: "amount")
   count: BigInt! @aggregate(fn: "count", arg: "id")

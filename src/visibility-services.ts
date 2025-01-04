@@ -1,12 +1,5 @@
 import { BigInt } from '@graphprotocol/graph-ts'
 import {
-  DefaultAdminDelayChangeCanceled as DefaultAdminDelayChangeCanceledEvent,
-  DefaultAdminDelayChangeScheduled as DefaultAdminDelayChangeScheduledEvent,
-  DefaultAdminTransferCanceled as DefaultAdminTransferCanceledEvent,
-  DefaultAdminTransferScheduled as DefaultAdminTransferScheduledEvent,
-  RoleAdminChanged as RoleAdminChangedEvent,
-  RoleGranted as RoleGrantedEvent,
-  RoleRevoked as RoleRevokedEvent,
   ServiceCreated as ServiceCreatedEvent,
   ServiceExecutionAccepted as ServiceExecutionAcceptedEvent,
   ServiceExecutionCanceled as ServiceExecutionCanceledEvent,
@@ -17,13 +10,6 @@ import {
   ServiceUpdated as ServiceUpdatedEvent
 } from '../generated/VisibilityServices/VisibilityServices'
 import {
-  DefaultAdminDelayChangeCanceled,
-  DefaultAdminDelayChangeScheduled,
-  DefaultAdminTransferCanceled,
-  DefaultAdminTransferScheduled,
-  RoleAdminChanged,
-  RoleGranted,
-  RoleRevoked,
   ServiceCreated,
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
@@ -36,111 +22,6 @@ import {
   VisibilityService,
   VisibilityServiceExecution
 } from '../generated/schema'
-
-export function handleDefaultAdminDelayChangeCanceled(
-  event: DefaultAdminDelayChangeCanceledEvent
-): void {
-  let entity = new DefaultAdminDelayChangeCanceled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminDelayChangeScheduled(
-  event: DefaultAdminDelayChangeScheduledEvent
-): void {
-  let entity = new DefaultAdminDelayChangeScheduled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.newDelay = event.params.newDelay
-  entity.effectSchedule = event.params.effectSchedule
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminTransferCanceled(
-  event: DefaultAdminTransferCanceledEvent
-): void {
-  let entity = new DefaultAdminTransferCanceled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminTransferScheduled(
-  event: DefaultAdminTransferScheduledEvent
-): void {
-  let entity = new DefaultAdminTransferScheduled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.newAdmin = event.params.newAdmin
-  entity.acceptSchedule = event.params.acceptSchedule
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
-  let entity = new RoleAdminChanged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.previousAdminRole = event.params.previousAdminRole
-  entity.newAdminRole = event.params.newAdminRole
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let entity = new RoleGranted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleRevoked(event: RoleRevokedEvent): void {
-  let entity = new RoleRevoked(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
 
 export function handleServiceCreated(event: ServiceCreatedEvent): void {
   let visibility = Visibility.load(event.params.visibilityId.toString())
@@ -414,6 +295,17 @@ export function handleServiceExecutionValidated(
 }
 
 export function handleServiceUpdated(event: ServiceUpdatedEvent): void {
+  let visibilityService = VisibilityService.load(event.params.nonce.toString())
+  if (visibilityService == null) {
+    visibilityService = VisibilityService.loadInBlock(
+      event.params.nonce.toString()
+    )
+  }
+  if (visibilityService != null) {
+    visibilityService.enabled = event.params.enabled
+    visibilityService.save()
+  }
+
   let entity = new ServiceUpdated(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )

@@ -4,32 +4,18 @@ import {
   CreatorVisibilitySet as CreatorVisibilitySetEvent,
   CreditsTrade as CreditsTradeEvent,
   CreditsTransfer as CreditsTransferEvent,
-  DefaultAdminDelayChangeCanceled as DefaultAdminDelayChangeCanceledEvent,
-  DefaultAdminDelayChangeScheduled as DefaultAdminDelayChangeScheduledEvent,
-  DefaultAdminTransferCanceled as DefaultAdminTransferCanceledEvent,
-  DefaultAdminTransferScheduled as DefaultAdminTransferScheduledEvent,
-  ReferrerPartnerSet as ReferrerPartnerSetEvent,
-  RoleAdminChanged as RoleAdminChangedEvent,
-  RoleGranted as RoleGrantedEvent,
-  RoleRevoked as RoleRevokedEvent
+  ReferrerPartnerSet as ReferrerPartnerSetEvent
 } from '../generated/VisibilityCredits/VisibilityCredits'
 import {
   CreatorFeeClaimed,
   CreatorVisibilitySet,
   CreditsTrade,
   CreditsTransfer,
-  DefaultAdminDelayChangeCanceled,
-  DefaultAdminDelayChangeScheduled,
-  DefaultAdminTransferCanceled,
-  DefaultAdminTransferScheduled,
   ReferrerPartnerSet,
-  RoleAdminChanged,
-  RoleGranted,
-  RoleRevoked,
   Visibility,
   VisibilityBalance
 } from '../generated/schema'
-import { log } from 'matchstick-as'
+// import { log } from 'matchstick-as'
 
 export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   const A = BigInt.fromU64(15000000000) // 0.000000015 ether;
@@ -245,116 +231,12 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
   entity.save()
 }
 
-export function handleDefaultAdminDelayChangeCanceled(
-  event: DefaultAdminDelayChangeCanceledEvent
-): void {
-  let entity = new DefaultAdminDelayChangeCanceled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminDelayChangeScheduled(
-  event: DefaultAdminDelayChangeScheduledEvent
-): void {
-  let entity = new DefaultAdminDelayChangeScheduled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.newDelay = event.params.newDelay
-  entity.effectSchedule = event.params.effectSchedule
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminTransferCanceled(
-  event: DefaultAdminTransferCanceledEvent
-): void {
-  let entity = new DefaultAdminTransferCanceled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleDefaultAdminTransferScheduled(
-  event: DefaultAdminTransferScheduledEvent
-): void {
-  let entity = new DefaultAdminTransferScheduled(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.newAdmin = event.params.newAdmin
-  entity.acceptSchedule = event.params.acceptSchedule
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
 export function handleReferrerPartnerSet(event: ReferrerPartnerSetEvent): void {
   let entity = new ReferrerPartnerSet(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.referrer = event.params.referrer
   entity.partner = event.params.partner
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
-  let entity = new RoleAdminChanged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.previousAdminRole = event.params.previousAdminRole
-  entity.newAdminRole = event.params.newAdminRole
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let entity = new RoleGranted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleRoleRevoked(event: RoleRevokedEvent): void {
-  let entity = new RoleRevoked(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.role = event.params.role
-  entity.account = event.params.account
-  entity.sender = event.params.sender
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
