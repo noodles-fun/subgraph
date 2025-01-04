@@ -10,9 +10,8 @@
 
 ## Subgraphs
 
-* Abstract mainnet: coming soon
-
-* Abstract testnet: <https://api.studio.thegraph.com/query/94473/noodles-subgraph-testnet/version/latest>
+* Abstract mainnet: Coming soon
+* Abstract testnet: <https://thegraph.com/explorer/subgraphs/3Z4xUtmadHbNTYpzk9d4pPpHJnsA9FXsYjwJx1aQ9zAC?view=Query&chain=arbitrum-one>
 
 ### Query example
 
@@ -32,7 +31,7 @@
     user
     balance
   }
-  creditsTradeVisibilityStats_collection(interval: day) {
+  creditsTradeVisibilityStats_collection(interval: hour) {
     visibility {
       id
     }
