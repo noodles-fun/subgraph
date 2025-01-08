@@ -8,7 +8,7 @@ dataSources:
     name: VisibilityCredits
     network: abstract-testnet
     source:
-      address: "0xE7bdC5fa6B9F20c43a0fe5aff23E30cCb717071C"
+      address: "0x00fbeC67F05fc30898670BB7510863216E4d2C95"
       abi: VisibilityCredits
       startBlock: 3312066
     mapping:
@@ -27,7 +27,7 @@ dataSources:
       eventHandlers:
         - event: CreatorFeeClaimed(indexed address,uint256)
           handler: handleCreatorFeeClaimed
-        - event: CreatorVisibilitySet(string,address)
+        - event: CreatorVisibilitySet(string,address,string)
           handler: handleCreatorVisibilitySet
         - event: CreditsTrade((address,string,uint256,bool,uint256,uint256,uint256,uint256,uint256,address,address,uint256))
           handler: handleCreditsTrade
@@ -41,7 +41,7 @@ dataSources:
     network: abstract-testnet
     source:
       abi: VisibilityServices
-      address: "0x02d3e594dA2963c5BA2B9E64220aCF55A669b794"
+      address: "0xe9f915bE546BE513c880E39E515D52002ced7c7b"
       startBlock: 3312078
     mapping:
       kind: ethereum/events

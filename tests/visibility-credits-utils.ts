@@ -28,7 +28,8 @@ export function createCreatorFeeClaimedEvent(
 
 export function createCreatorVisibilitySetEvent(
   visibilityId: string,
-  creator: Address
+  creator: Address,
+  metadata: string
 ): CreatorVisibilitySet {
   let creatorVisibilitySetEvent =
     changetype<CreatorVisibilitySet>(newMockEvent())
@@ -43,6 +44,9 @@ export function createCreatorVisibilitySetEvent(
   )
   creatorVisibilitySetEvent.parameters.push(
     new ethereum.EventParam('creator', ethereum.Value.fromAddress(creator))
+  )
+  creatorVisibilitySetEvent.parameters.push(
+    new ethereum.EventParam('metadata', ethereum.Value.fromString(metadata))
   )
 
   return creatorVisibilitySetEvent

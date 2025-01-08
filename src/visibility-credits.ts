@@ -51,6 +51,7 @@ export function handleCreatorVisibilitySet(
     visibility.totalSupply = BigInt.fromI32(0)
   }
   visibility.creator = event.params.creator
+  visibility.metadata = event.params.metadata
   visibility.save()
 
   /////
@@ -60,6 +61,7 @@ export function handleCreatorVisibilitySet(
   )
   entity.visibility = visibility.id
   entity.creator = event.params.creator
+  entity.metadata = event.params.metadata
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp

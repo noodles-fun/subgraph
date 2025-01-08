@@ -24,6 +24,7 @@ import {
 } from './visibility-credits-utils'
 
 let creator = Address.fromString('0x0000000000000000000000000000000000000001')
+let metadata = 'test'
 let from = Address.fromString('0x0000000000000000000000000000000000000002')
 let to = Address.fromString('0x0000000000000000000000000000000000000003')
 let visibilityId = 'x-test'
@@ -70,7 +71,8 @@ describe('VisibilityCredits', () => {
   test('CreatorVisibilitySet', () => {
     let newCreatorVisibilitySetEvent = createCreatorVisibilitySetEvent(
       visibilityId,
-      creator
+      creator,
+      metadata
     )
     handleCreatorVisibilitySet(newCreatorVisibilitySetEvent)
 
@@ -83,6 +85,7 @@ describe('VisibilityCredits', () => {
       'creator',
       '0x0000000000000000000000000000000000000001'
     )
+    assert.fieldEquals('Visibility', 'x-test', 'metadata', 'test')
   })
 
   test('CreditsTrade', () => {

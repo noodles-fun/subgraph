@@ -10,6 +10,7 @@ enum ExecutionState {
 type Visibility @entity {
   id: String!
   creator: Bytes # address
+  metadata: String # string
   currentPrice: BigInt! # uint256
   totalSupply: BigInt! # uint256
   balances: [VisibilityBalance!]! @derivedFrom(field: "visibility")
@@ -65,6 +66,7 @@ type CreatorVisibilitySet @entity(immutable: true) {
   id: Bytes!
   visibility: Visibility!
   creator: Bytes! # address
+  metadata: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
