@@ -110,7 +110,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
         .concat(event.params.tradeEvent.from.toHexString())
     )
     visibilityBalance.visibility = visibility.id
-    visibilityBalance.user = event.params.tradeEvent.from
+    visibilityBalance.userAddress = event.params.tradeEvent.from
     visibilityBalance.balance = BigInt.fromI32(0)
   }
 
@@ -121,10 +121,26 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   visibilityBalance.save()
 
   let entity = new CreditsTrade('auto')
-  entity.from = event.params.tradeEvent.from
+  entity.userAddress = event.params.tradeEvent.from
+  entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
   entity.amount = event.params.tradeEvent.amount
   entity.isBuy = event.params.tradeEvent.isBuy
+  entity.buyCost = event.params.tradeEvent.isBuy
+    ? event.params.tradeEvent.tradeCost
+        .plus(event.params.tradeEvent.creatorFee)
+        .plus(event.params.tradeEvent.protocolFee)
+        .plus(event.params.tradeEvent.referrerFee)
+        .plus(event.params.tradeEvent.partnerFee)
+    : BigInt.fromI32(0)
+  entity.sellReimbursement = event.params.tradeEvent.isBuy
+    ? BigInt.fromI32(0)
+    : event.params.tradeEvent.tradeCost
+        .minus(event.params.tradeEvent.creatorFee)
+        .minus(event.params.tradeEvent.protocolFee)
+        .minus(event.params.tradeEvent.referrerFee)
+        .minus(event.params.tradeEvent.partnerFee)
+
   entity.tradeCost = event.params.tradeEvent.tradeCost
   entity.creatorFee = event.params.tradeEvent.creatorFee
   entity.protocolFee = event.params.tradeEvent.protocolFee
@@ -178,7 +194,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
         .concat(event.params.from.toHexString())
     )
     visibilityBalanceFrom.visibility = visibility.id
-    visibilityBalanceFrom.user = event.params.from
+    visibilityBalanceFrom.userAddress = event.params.from
     visibilityBalanceFrom.balance = BigInt.fromI32(0)
   }
 
@@ -204,7 +220,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
         .concat(event.params.to.toHexString())
     )
     visibilityBalanceTo.visibility = visibility.id
-    visibilityBalanceTo.user = event.params.to
+    visibilityBalanceTo.userAddress = event.params.to
     visibilityBalanceTo.balance = BigInt.fromI32(0)
   }
 
@@ -222,7 +238,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.visibility = visibility.id
-  entity.from = event.params.from
+  entity.userAddress = event.params.from
   entity.to = event.params.to
   entity.amount = event.params.amount
 

@@ -124,7 +124,7 @@ export function handleServiceExecutionCanceled(
   )
   entity.serviceNonce = event.params.serviceNonce
   entity.executionNonce = event.params.executionNonce
-  entity.from = event.params.from
+  entity.userAddress = event.params.from
   entity.cancelData = event.params.cancelData
 
   entity.blockNumber = event.block.number
