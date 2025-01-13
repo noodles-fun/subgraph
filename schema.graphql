@@ -202,7 +202,7 @@ type ServiceUpdated @entity(immutable: true) {
 ## Stats entities
 ###################
 
-type CreditsTradeGlobalStats
+type CreditsTradeAllStats
   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
   id: Int8!
   timestamp: Timestamp!
@@ -217,7 +217,7 @@ type CreditsTradeGlobalStats
   lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
 }
 
-type CreditsTradeGlobalCumulativeStats
+type CreditsTradeAllCumulativeStats
   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
   id: Int8!
   timestamp: Timestamp!
@@ -242,7 +242,9 @@ type CreditsTradeVisibilityStats
   id: Int8!
   visibility: Visibility! @group(by: ["visibility"])
   timestamp: Timestamp!
+  minSupply: BigInt! @aggregate(fn: "min", arg: "newTotalSupply")
   maxSupply: BigInt! @aggregate(fn: "max", arg: "newTotalSupply")
+  minPrice: BigInt! @aggregate(fn: "min", arg: "newCurrentPrice")
   maxPrice: BigInt! @aggregate(fn: "max", arg: "newCurrentPrice")
   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
@@ -260,7 +262,9 @@ type CreditsTradeVisibilityCumulativeStats
   id: Int8!
   visibility: Visibility! @group(by: ["visibility"])
   timestamp: Timestamp!
+  minSupply: BigInt! @aggregate(fn: "min", arg: "newTotalSupply")
   maxSupply: BigInt! @aggregate(fn: "max", arg: "newTotalSupply")
+  minPrice: BigInt! @aggregate(fn: "min", arg: "newCurrentPrice")
   maxPrice: BigInt! @aggregate(fn: "max", arg: "newCurrentPrice")
   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
