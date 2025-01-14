@@ -59,6 +59,7 @@ type CreatorFeeClaimed @entity(timeseries: true, immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
+  _tmp: Int
   timestamp: Timestamp
 }
 

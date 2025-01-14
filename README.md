@@ -68,8 +68,16 @@
 
 ### Deploy
 
+#### The Graph Studio
+
    ```bash
    graph deploy --node https://api.studio.thegraph.com/deploy/ noodles-subgraph-testnet # replace noodles-subgraph-testnet by your subgraph slug
+   ```
+
+#### Goldsky
+
+  ```bash
+   goldsky subgraph deploy noodles-subgraph-testnet/0.0.9 --path . # replace noodles-subgraph-testnet/0.0.9 by the slug and version you want
    ```
 
 ### Testing
