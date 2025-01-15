@@ -1,5 +1,5 @@
 {
-  "version": "0.0.10",
+  "version": "0.0.14",
   "name": "noodles-subgraph-testnet",
   "license": "UNLICENSED",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "graph test -d"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.93.3",
+    "@graphprotocol/graph-cli": "^0.94.0",
     "@graphprotocol/graph-ts": "0.36.0"
   },
   "devDependencies": {

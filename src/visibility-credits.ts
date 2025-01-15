@@ -27,7 +27,7 @@ export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
 }
 
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
-  let entity = new CreatorFeeClaimed('auto')
+  let entity = new CreatorFeeClaimed(event.block.timestamp.toString())
   entity.creator = event.params.creator
   entity.amount = event.params.amount
 
@@ -120,7 +120,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
 
   visibilityBalance.save()
 
-  let entity = new CreditsTrade('auto')
+  let entity = new CreditsTrade(event.block.timestamp.toString())
   entity.userAddress = event.params.tradeEvent.from
   entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
