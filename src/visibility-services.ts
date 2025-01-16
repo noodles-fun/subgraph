@@ -25,10 +25,10 @@ import {
 
 export function handleServiceCreated(event: ServiceCreatedEvent): void {
   let visibility = Visibility.load(event.params.visibilityId.toString())
-  if (visibility == null) {
+  if (!visibility) {
     visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
   }
-  if (visibility == null) {
+  if (!visibility) {
     visibility = new Visibility(event.params.visibilityId.toString())
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
@@ -64,7 +64,7 @@ export function handleServiceExecutionAccepted(
       .concat('-')
       .concat(event.params.executionNonce.toString())
   )
-  if (serviceExecution == null) {
+  if (!serviceExecution) {
     VisibilityServiceExecution.loadInBlock(
       event.params.serviceNonce
         .toString()
@@ -73,7 +73,7 @@ export function handleServiceExecutionAccepted(
     )
   }
 
-  if (serviceExecution != null) {
+  if (serviceExecution) {
     serviceExecution.state = 'ACCEPTED'
     serviceExecution.responseData = event.params.responseData
     serviceExecution.lastUpdated = event.block.timestamp
@@ -103,7 +103,7 @@ export function handleServiceExecutionCanceled(
       .concat('-')
       .concat(event.params.executionNonce.toString())
   )
-  if (serviceExecution == null) {
+  if (!serviceExecution) {
     VisibilityServiceExecution.loadInBlock(
       event.params.serviceNonce
         .toString()
@@ -143,7 +143,7 @@ export function handleServiceExecutionDisputed(
       .concat('-')
       .concat(event.params.executionNonce.toString())
   )
-  if (serviceExecution == null) {
+  if (!serviceExecution) {
     VisibilityServiceExecution.loadInBlock(
       event.params.serviceNonce
         .toString()
@@ -152,7 +152,7 @@ export function handleServiceExecutionDisputed(
     )
   }
 
-  if (serviceExecution != null) {
+  if (serviceExecution) {
     serviceExecution.state = 'DISPUTED'
     serviceExecution.disputeData = event.params.disputeData
     serviceExecution.lastUpdated = event.block.timestamp
@@ -177,12 +177,12 @@ export function handleServiceExecutionRequested(
   event: ServiceExecutionRequestedEvent
 ): void {
   let service = VisibilityService.load(event.params.serviceNonce.toString())
-  if (service == null) {
+  if (!service) {
     service = VisibilityService.loadInBlock(
       event.params.serviceNonce.toString()
     )
   }
-  if (service != null) {
+  if (service) {
     let serviceExecution = new VisibilityServiceExecution(
       event.params.serviceNonce
         .toString()
@@ -222,7 +222,7 @@ export function handleServiceExecutionResolved(
       .concat('-')
       .concat(event.params.executionNonce.toString())
   )
-  if (serviceExecution == null) {
+  if (!serviceExecution) {
     VisibilityServiceExecution.loadInBlock(
       event.params.serviceNonce
         .toString()
@@ -231,7 +231,7 @@ export function handleServiceExecutionResolved(
     )
   }
 
-  if (serviceExecution != null) {
+  if (serviceExecution) {
     if (event.params.refund) {
       serviceExecution.state = 'REFUNDED'
     } else {
@@ -266,7 +266,7 @@ export function handleServiceExecutionValidated(
       .concat('-')
       .concat(event.params.executionNonce.toString())
   )
-  if (serviceExecution == null) {
+  if (!serviceExecution) {
     VisibilityServiceExecution.loadInBlock(
       event.params.serviceNonce
         .toString()
@@ -275,7 +275,7 @@ export function handleServiceExecutionValidated(
     )
   }
 
-  if (serviceExecution != null) {
+  if (serviceExecution) {
     serviceExecution.state = 'VALIDATED'
     serviceExecution.lastUpdated = event.block.timestamp
     serviceExecution.save()
@@ -296,12 +296,12 @@ export function handleServiceExecutionValidated(
 
 export function handleServiceUpdated(event: ServiceUpdatedEvent): void {
   let visibilityService = VisibilityService.load(event.params.nonce.toString())
-  if (visibilityService == null) {
+  if (!visibilityService) {
     visibilityService = VisibilityService.loadInBlock(
       event.params.nonce.toString()
     )
   }
-  if (visibilityService != null) {
+  if (visibilityService) {
     visibilityService.enabled = event.params.enabled
     visibilityService.save()
   }

@@ -27,7 +27,7 @@ export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
 }
 
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
-  let entity = new CreatorFeeClaimed(event.block.timestamp.toString())
+  let entity = new CreatorFeeClaimed('auto')
   entity.creator = event.params.creator
   entity.amount = event.params.amount
 
@@ -42,10 +42,10 @@ export function handleCreatorVisibilitySet(
   event: CreatorVisibilitySetEvent
 ): void {
   let visibility = Visibility.load(event.params.visibilityId.toString())
-  if (visibility == null) {
+  if (!visibility) {
     visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
   }
-  if (visibility == null) {
+  if (!visibility) {
     visibility = new Visibility(event.params.visibilityId.toString())
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
@@ -74,12 +74,12 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   let visibility = Visibility.load(
     event.params.tradeEvent.visibilityId.toString()
   )
-  if (visibility == null) {
+  if (!visibility) {
     visibility = Visibility.loadInBlock(
       event.params.tradeEvent.visibilityId.toString()
     )
   }
-  if (visibility == null) {
+  if (!visibility) {
     visibility = new Visibility(event.params.tradeEvent.visibilityId.toString())
   }
   visibility.currentPrice = computeNewCurrentPrice(
@@ -94,7 +94,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
       .concat('-')
       .concat(event.params.tradeEvent.from.toHexString())
   )
-  if (visibilityBalance == null) {
+  if (!visibilityBalance) {
     visibilityBalance = VisibilityBalance.loadInBlock(
       event.params.tradeEvent.visibilityId
         .toString()
@@ -102,7 +102,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
         .concat(event.params.tradeEvent.from.toHexString())
     )
   }
-  if (visibilityBalance == null) {
+  if (!visibilityBalance) {
     visibilityBalance = new VisibilityBalance(
       event.params.tradeEvent.visibilityId
         .toString()
@@ -120,7 +120,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
 
   visibilityBalance.save()
 
-  let entity = new CreditsTrade(event.block.timestamp.toString())
+  let entity = new CreditsTrade('auto')
   entity.userAddress = event.params.tradeEvent.from
   entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
@@ -162,10 +162,10 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
 
 export function handleCreditsTransfer(event: CreditsTransferEvent): void {
   let visibility = Visibility.load(event.params.visibilityId.toString())
-  if (visibility == null) {
+  if (!visibility) {
     visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
   }
-  if (visibility == null) {
+  if (!visibility) {
     visibility = new Visibility(event.params.visibilityId.toString())
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
@@ -178,7 +178,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
       .concat('-')
       .concat(event.params.from.toHexString())
   )
-  if (visibilityBalanceFrom == null) {
+  if (!visibilityBalanceFrom) {
     visibilityBalanceFrom = VisibilityBalance.loadInBlock(
       event.params.visibilityId
         .toString()
@@ -186,7 +186,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
         .concat(event.params.from.toHexString())
     )
   }
-  if (visibilityBalanceFrom == null) {
+  if (!visibilityBalanceFrom) {
     visibilityBalanceFrom = new VisibilityBalance(
       event.params.visibilityId
         .toString()
@@ -204,7 +204,8 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
       .concat('-')
       .concat(event.params.to.toHexString())
   )
-  if (visibilityBalanceTo == null) {
+
+  if (!visibilityBalanceTo) {
     visibilityBalanceTo = VisibilityBalance.loadInBlock(
       event.params.visibilityId
         .toString()
@@ -212,7 +213,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
         .concat(event.params.to.toHexString())
     )
   }
-  if (visibilityBalanceTo == null) {
+  if (!visibilityBalanceTo) {
     visibilityBalanceTo = new VisibilityBalance(
       event.params.visibilityId
         .toString()
