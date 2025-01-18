@@ -20,7 +20,7 @@ import {
 export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   const A = BigInt.fromU64(15000000000) // 0.000000015 ether;
   const B = BigInt.fromU64(25000000000000) // 0.000025 ether;
-  const BASE_PRICE = BigInt.fromU64(100000000000000) // 0.0001 ether;
+  const BASE_PRICE = BigInt.fromU64(10000000000000000) // 0.01 ether;
 
   // BASE_PRICE + (A * (totalSupply ** 2)) + (B * totalSupply);
   return BASE_PRICE.plus(A.times(totalSupply.pow(2))).plus(B.times(totalSupply))

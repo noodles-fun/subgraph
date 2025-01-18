@@ -38,7 +38,7 @@ let partner = Address.fromString('0x0000000000000000000000000000000000000005')
 let amount = BigInt.fromI32(3)
 let newTotalSupply = BigInt.fromI32(5)
 let newCurrentPrice = BigInt.fromU64(
-  100000000000000 + 15000000000 * 5 ** 2 + 25000000000000 * 5
+  10000000000000000 + 15000000000 * 5 ** 2 + 25000000000000 * 5
 )
 
 describe('VisibilityCredits', () => {
