@@ -12,6 +12,7 @@ import {
   CreditsTrade,
   CreditsTransfer,
   ReferrerPartnerSet,
+  User,
   Visibility,
   VisibilityBalance
 } from '../generated/schema'
@@ -28,7 +29,17 @@ export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
 
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
   let entity = new CreatorFeeClaimed('auto')
-  entity.creator = event.params.creator
+
+  let creator = User.load(event.params.creator)
+  if (!creator) {
+    creator = User.loadInBlock(event.params.creator)
+  }
+  if (!creator) {
+    creator = new User(event.params.creator)
+    creator.save()
+  }
+  entity.creator = creator.id
+
   entity.amount = event.params.amount
 
   entity.blockNumber = event.block.number
@@ -53,7 +64,17 @@ export function handleCreatorVisibilitySet(
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
   }
-  visibility.creator = event.params.creator
+
+  let creator = User.load(event.params.creator)
+  if (!creator) {
+    creator = User.loadInBlock(event.params.creator)
+  }
+  if (!creator) {
+    creator = new User(event.params.creator)
+    creator.save()
+  }
+  visibility.creator = creator.id
+
   visibility.metadata = event.params.metadata
   visibility.save()
 
@@ -63,7 +84,7 @@ export function handleCreatorVisibilitySet(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.visibility = visibility.id
-  entity.creator = event.params.creator
+  entity.creator = creator.id
   entity.metadata = event.params.metadata
 
   entity.blockNumber = event.block.number
@@ -94,6 +115,39 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   visibility.totalSupply = event.params.tradeEvent.newTotalSupply
   visibility.save()
 
+  let user = User.load(event.params.tradeEvent.from)
+  if (!user) {
+    user = User.loadInBlock(event.params.tradeEvent.from)
+  }
+  if (!user) {
+    user = new User(event.params.tradeEvent.from)
+    user.save()
+  }
+
+  let referrer: User | null = null
+  if (event.params.tradeEvent.referrer != Bytes.fromI32(0)) {
+    referrer = User.load(event.params.tradeEvent.referrer)
+    if (!referrer) {
+      referrer = User.loadInBlock(event.params.tradeEvent.referrer)
+    }
+    if (!referrer) {
+      referrer = new User(event.params.tradeEvent.referrer)
+      referrer.save()
+    }
+  }
+
+  let partner: User | null = null
+  if (event.params.tradeEvent.partner != Bytes.fromI32(0)) {
+    partner = User.load(event.params.tradeEvent.partner)
+    if (!partner) {
+      partner = User.loadInBlock(event.params.tradeEvent.partner)
+    }
+    if (!partner) {
+      partner = new User(event.params.tradeEvent.partner)
+      partner.save()
+    }
+  }
+
   let visibilityBalance = VisibilityBalance.load(
     Bytes.fromUTF8(
       event.params.tradeEvent.visibilityId
@@ -122,7 +176,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
       )
     )
     visibilityBalance.visibility = visibility.id
-    visibilityBalance.userAddress = event.params.tradeEvent.from
+    visibilityBalance.user = user.id
     visibilityBalance.balance = BigInt.fromI32(0)
   }
 
@@ -133,7 +187,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   visibilityBalance.save()
 
   let entity = new CreditsTrade('auto')
-  entity.userAddress = event.params.tradeEvent.from
+  entity.user = user.id
   entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
   entity.amount = event.params.tradeEvent.amount
@@ -158,8 +212,8 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   entity.protocolFee = event.params.tradeEvent.protocolFee
   entity.referrerFee = event.params.tradeEvent.referrerFee
   entity.partnerFee = event.params.tradeEvent.partnerFee
-  entity.referrer = event.params.tradeEvent.referrer
-  entity.partner = event.params.tradeEvent.partner
+  entity.referrer = referrer ? referrer.id : null
+  entity.partner = partner ? partner.id : null
   entity.newTotalSupply = event.params.tradeEvent.newTotalSupply
   entity.newCurrentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
@@ -186,6 +240,24 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     visibility.totalSupply = BigInt.fromI32(0)
   }
   visibility.save()
+
+  let from = User.load(event.params.from)
+  if (!from) {
+    from = User.loadInBlock(event.params.from)
+  }
+  if (!from) {
+    from = new User(event.params.from)
+    from.save()
+  }
+
+  let to = User.load(event.params.to)
+  if (!to) {
+    to = User.loadInBlock(event.params.to)
+  }
+  if (!to) {
+    to = new User(event.params.to)
+    to.save()
+  }
 
   let visibilityBalanceFrom = VisibilityBalance.load(
     Bytes.fromUTF8(
@@ -215,7 +287,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
       )
     )
     visibilityBalanceFrom.visibility = visibility.id
-    visibilityBalanceFrom.userAddress = event.params.from
+    visibilityBalanceFrom.user = from.id
     visibilityBalanceFrom.balance = BigInt.fromI32(0)
   }
 
@@ -248,7 +320,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
       )
     )
     visibilityBalanceTo.visibility = visibility.id
-    visibilityBalanceTo.userAddress = event.params.to
+    visibilityBalanceTo.user = to.id
     visibilityBalanceTo.balance = BigInt.fromI32(0)
   }
 
@@ -266,8 +338,8 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.visibility = visibility.id
-  entity.userAddress = event.params.from
-  entity.to = event.params.to
+  entity.from = from.id
+  entity.to = to.id
   entity.amount = event.params.amount
 
   entity.blockNumber = event.block.number
@@ -281,8 +353,32 @@ export function handleReferrerPartnerSet(event: ReferrerPartnerSetEvent): void {
   let entity = new ReferrerPartnerSet(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
-  entity.referrer = event.params.referrer
-  entity.partner = event.params.partner
+
+  let referrer = User.load(event.params.referrer)
+  if (!referrer) {
+    referrer = User.loadInBlock(event.params.referrer)
+  }
+  if (!referrer) {
+    referrer = new User(event.params.referrer)
+    referrer.save()
+  }
+
+  let partner: User | null = null
+  if (event.params.partner != Bytes.fromI32(0)) {
+    partner = User.load(event.params.partner)
+    if (!partner) {
+      partner = User.loadInBlock(event.params.partner)
+    }
+    if (!partner) {
+      partner = new User(event.params.partner)
+      partner.save()
+    }
+  }
+
+  referrer.partner = partner ? partner.id : null
+
+  entity.referrer = referrer.id
+  entity.partner = partner ? partner.id : null
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp

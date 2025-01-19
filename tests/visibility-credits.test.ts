@@ -126,7 +126,7 @@ describe('VisibilityCredits', () => {
     assert.fieldEquals(
       'CreditsTrade',
       'auto',
-      'userAddress',
+      'user',
       '0x0000000000000000000000000000000000000002'
     )
     assert.fieldEquals(

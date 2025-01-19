@@ -18,6 +18,7 @@ import {
   ServiceExecutionResolved,
   ServiceExecutionValidated,
   ServiceUpdated,
+  User,
   Visibility,
   VisibilityService,
   VisibilityServiceExecution
@@ -133,12 +134,21 @@ export function handleServiceExecutionCanceled(
     serviceExecution.save()
   }
 
+  let user = User.load(event.params.from)
+  if (!user) {
+    user = User.loadInBlock(event.params.from)
+  }
+  if (!user) {
+    user = new User(event.params.from)
+    user.save()
+  }
+
   let entity = new ServiceExecutionCanceled(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.serviceNonce = event.params.serviceNonce
   entity.executionNonce = event.params.executionNonce
-  entity.userAddress = event.params.from
+  entity.user = user.id
   entity.cancelData = event.params.cancelData
 
   entity.blockNumber = event.block.number
@@ -211,10 +221,20 @@ export function handleServiceExecutionRequested(
           .concat(event.params.executionNonce.toString())
       )
     )
+
+    let user = User.load(event.params.requester)
+    if (!user) {
+      user = User.loadInBlock(event.params.requester)
+    }
+    if (!user) {
+      user = new User(event.params.requester)
+      user.save()
+    }
+
     serviceExecution.state = 'REQUESTED'
     serviceExecution.service = service.id
     serviceExecution.executionNonce = event.params.executionNonce
-    serviceExecution.requester = event.params.requester
+    serviceExecution.requester = user.id
     serviceExecution.requestData = event.params.requestData
     serviceExecution.lastUpdated = event.block.timestamp
     serviceExecution.save()

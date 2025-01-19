@@ -17,19 +17,42 @@
 
 ```graphql
 {
-  visibilities(first: 5) {
-    id
-    creator
+  visibilities {
+    visibilityId
+    creator {
+      id # userAddress
+    }
     currentPrice
     totalSupply
   }
-  visibilityBalances(first: 5) {
-    id
+  visibilityBalances {    
     visibility {
-      id
+      visibilityId
     }
-    user
+    user {
+      id #userAddress
+    }
     balance
+  }
+  creditsTrades {
+    user {
+      id # userAddress
+    }
+    referrer {
+      id # referrerAddress, can be null
+    }
+    partner {
+      id # partnerAddress, can be null
+    }
+    visibility {
+      visibilityId
+      totalSupply # newTotalSupply
+      currentPrice # newcurrentPrice
+    }
+    amount
+    isBuy
+    buyCost # total paid by the user (include fees), if isBuy == true
+    sellReimbursement # sent to the user (fees deducted), if isBuy == false
   }
 }
 ```

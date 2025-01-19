@@ -7,10 +7,24 @@ enum ExecutionState {
   VALIDATED
 }
 
+type User @entity {
+  id: Bytes! # address
+  partner: User # address
+  balances: [VisibilityBalance!]! @derivedFrom(field: "user")
+  claimedCreatorEarnings: [CreatorFeeClaimed!]! @derivedFrom(field: "creator")
+  partnerTradesEarnings: [CreditsTrade!]! @derivedFrom(field: "partner")
+  referrersAsPartner: [User!]! @derivedFrom(field: "partner")
+  referralTradesEarnings: [CreditsTrade!]! @derivedFrom(field: "referrer")
+  requestedServices: [VisibilityServiceExecution!]!
+    @derivedFrom(field: "requester")
+  trades: [CreditsTrade!]! @derivedFrom(field: "user")
+  visibilities: [Visibility!]! @derivedFrom(field: "creator")
+}
+
 type Visibility @entity {
   id: Bytes! # visibilityId
   visibilityId: String! # visibilityId
-  creator: Bytes # address
+  creator: User # address
   metadata: String # string
   currentPrice: BigInt! # uint256
   totalSupply: BigInt! # uint256
@@ -22,7 +36,7 @@ type Visibility @entity {
 type VisibilityBalance @entity {
   id: Bytes! # visibilityId-userAddress
   visibility: Visibility!
-  userAddress: Bytes! # address
+  user: User! # userAddress
   balance: BigInt! # uint256
 }
 
@@ -41,7 +55,7 @@ type VisibilityServiceExecution @entity {
   state: ExecutionState!
   service: VisibilityService!
   executionNonce: BigInt! # uint256
-  requester: Bytes! # address
+  requester: User! # address
   requestData: String! # string
   responseData: String # string
   cancelData: String # string
@@ -50,13 +64,9 @@ type VisibilityServiceExecution @entity {
   lastUpdated: BigInt! # uint256
 }
 
-###################
-## Events entities
-###################
-
 type CreatorFeeClaimed @entity(timeseries: true) {
   id: Int8!
-  creator: Bytes! # address
+  creator: User! # address
   amount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
@@ -64,19 +74,9 @@ type CreatorFeeClaimed @entity(timeseries: true) {
   timestamp: Timestamp
 }
 
-type CreatorVisibilitySet @entity(immutable: true) {
-  id: Bytes!
-  visibility: Visibility!
-  creator: Bytes! # address
-  metadata: String! # string
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
 type CreditsTrade @entity(timeseries: true) {
   id: Int8!
-  userAddress: Bytes! # address
+  user: User! # userAddress
   userInBigInt: BigInt! # uint256
   visibility: Visibility!
   amount: BigInt! # uint256
@@ -88,8 +88,8 @@ type CreditsTrade @entity(timeseries: true) {
   protocolFee: BigInt! # uint256
   referrerFee: BigInt! # uint256
   partnerFee: BigInt! # uint256
-  referrer: Bytes! # address
-  partner: Bytes! # address
+  referrer: User # address
+  partner: User # address
   newTotalSupply: BigInt! # uint256
   newCurrentPrice: BigInt! # uint256
   blockNumber: BigInt!
@@ -98,11 +98,21 @@ type CreditsTrade @entity(timeseries: true) {
   timestamp: Timestamp
 }
 
+type CreatorVisibilitySet @entity(immutable: true) {
+  id: Bytes!
+  visibility: Visibility!
+  creator: User! # address
+  metadata: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type CreditsTransfer @entity(immutable: true) {
   id: Bytes!
   visibility: Visibility!
-  userAddress: Bytes! # address
-  to: Bytes! # address
+  from: User! # address
+  to: User! # address
   amount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
@@ -111,8 +121,8 @@ type CreditsTransfer @entity(immutable: true) {
 
 type ReferrerPartnerSet @entity(immutable: true) {
   id: Bytes!
-  referrer: Bytes! # address
-  partner: Bytes! # address
+  referrer: User! # address
+  partner: User # address
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -143,7 +153,7 @@ type ServiceExecutionCanceled @entity(immutable: true) {
   id: Bytes!
   serviceNonce: BigInt! # uint256
   executionNonce: BigInt! # uint256
-  userAddress: Bytes! # address
+  user: User! # userAddress
   cancelData: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!
