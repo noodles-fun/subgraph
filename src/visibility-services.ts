@@ -1,4 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
   ServiceCreated as ServiceCreatedEvent,
   ServiceExecutionAccepted as ServiceExecutionAcceptedEvent,
@@ -24,18 +24,24 @@ import {
 } from '../generated/schema'
 
 export function handleServiceCreated(event: ServiceCreatedEvent): void {
-  let visibility = Visibility.load(event.params.visibilityId.toString())
+  let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
-    visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
+    visibility = Visibility.loadInBlock(
+      Bytes.fromUTF8(event.params.visibilityId)
+    )
   }
   if (!visibility) {
-    visibility = new Visibility(event.params.visibilityId.toString())
+    visibility = new Visibility(Bytes.fromUTF8(event.params.visibilityId))
+    visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
   }
   visibility.save()
 
-  let visibilityService = new VisibilityService(event.params.nonce.toString())
+  let visibilityService = new VisibilityService(
+    Bytes.fromUTF8(event.params.nonce.toString())
+  )
+  visibilityService.serviceNonce = event.params.nonce
   visibilityService.visibility = visibility.id
   visibilityService.serviceType = event.params.serviceType
   visibilityService.creditsCostAmount = event.params.creditsCostAmount
@@ -59,17 +65,21 @@ export function handleServiceExecutionAccepted(
   event: ServiceExecutionAcceptedEvent
 ): void {
   let serviceExecution = VisibilityServiceExecution.load(
-    event.params.serviceNonce
-      .toString()
-      .concat('-')
-      .concat(event.params.executionNonce.toString())
-  )
-  if (!serviceExecution) {
-    VisibilityServiceExecution.loadInBlock(
+    Bytes.fromUTF8(
       event.params.serviceNonce
         .toString()
         .concat('-')
         .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
   }
 
@@ -98,17 +108,21 @@ export function handleServiceExecutionCanceled(
   event: ServiceExecutionCanceledEvent
 ): void {
   let serviceExecution = VisibilityServiceExecution.load(
-    event.params.serviceNonce
-      .toString()
-      .concat('-')
-      .concat(event.params.executionNonce.toString())
-  )
-  if (!serviceExecution) {
-    VisibilityServiceExecution.loadInBlock(
+    Bytes.fromUTF8(
       event.params.serviceNonce
         .toString()
         .concat('-')
         .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
   }
 
@@ -138,17 +152,21 @@ export function handleServiceExecutionDisputed(
   event: ServiceExecutionDisputedEvent
 ): void {
   let serviceExecution = VisibilityServiceExecution.load(
-    event.params.serviceNonce
-      .toString()
-      .concat('-')
-      .concat(event.params.executionNonce.toString())
-  )
-  if (!serviceExecution) {
-    VisibilityServiceExecution.loadInBlock(
+    Bytes.fromUTF8(
       event.params.serviceNonce
         .toString()
         .concat('-')
         .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
   }
 
@@ -176,18 +194,22 @@ export function handleServiceExecutionDisputed(
 export function handleServiceExecutionRequested(
   event: ServiceExecutionRequestedEvent
 ): void {
-  let service = VisibilityService.load(event.params.serviceNonce.toString())
+  let service = VisibilityService.load(
+    Bytes.fromUTF8(event.params.serviceNonce.toString())
+  )
   if (!service) {
     service = VisibilityService.loadInBlock(
-      event.params.serviceNonce.toString()
+      Bytes.fromUTF8(event.params.serviceNonce.toString())
     )
   }
   if (service) {
     let serviceExecution = new VisibilityServiceExecution(
-      event.params.serviceNonce
-        .toString()
-        .concat('-')
-        .concat(event.params.executionNonce.toString())
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
     serviceExecution.state = 'REQUESTED'
     serviceExecution.service = service.id
@@ -217,17 +239,21 @@ export function handleServiceExecutionResolved(
   event: ServiceExecutionResolvedEvent
 ): void {
   let serviceExecution = VisibilityServiceExecution.load(
-    event.params.serviceNonce
-      .toString()
-      .concat('-')
-      .concat(event.params.executionNonce.toString())
-  )
-  if (!serviceExecution) {
-    VisibilityServiceExecution.loadInBlock(
+    Bytes.fromUTF8(
       event.params.serviceNonce
         .toString()
         .concat('-')
         .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
   }
 
@@ -261,17 +287,21 @@ export function handleServiceExecutionValidated(
   event: ServiceExecutionValidatedEvent
 ): void {
   let serviceExecution = VisibilityServiceExecution.load(
-    event.params.serviceNonce
-      .toString()
-      .concat('-')
-      .concat(event.params.executionNonce.toString())
-  )
-  if (!serviceExecution) {
-    VisibilityServiceExecution.loadInBlock(
+    Bytes.fromUTF8(
       event.params.serviceNonce
         .toString()
         .concat('-')
         .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
     )
   }
 
@@ -295,10 +325,12 @@ export function handleServiceExecutionValidated(
 }
 
 export function handleServiceUpdated(event: ServiceUpdatedEvent): void {
-  let visibilityService = VisibilityService.load(event.params.nonce.toString())
+  let visibilityService = VisibilityService.load(
+    Bytes.fromUTF8(event.params.nonce.toString())
+  )
   if (!visibilityService) {
     visibilityService = VisibilityService.loadInBlock(
-      event.params.nonce.toString()
+      Bytes.fromUTF8(event.params.nonce.toString())
     )
   }
   if (visibilityService) {

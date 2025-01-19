@@ -1,4 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
   CreatorFeeClaimed as CreatorFeeClaimedEvent,
   CreatorVisibilitySet as CreatorVisibilitySetEvent,
@@ -41,12 +41,15 @@ export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
 export function handleCreatorVisibilitySet(
   event: CreatorVisibilitySetEvent
 ): void {
-  let visibility = Visibility.load(event.params.visibilityId.toString())
+  let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
-    visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
+    visibility = Visibility.loadInBlock(
+      Bytes.fromUTF8(event.params.visibilityId)
+    )
   }
   if (!visibility) {
-    visibility = new Visibility(event.params.visibilityId.toString())
+    visibility = new Visibility(Bytes.fromUTF8(event.params.visibilityId))
+    visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
   }
@@ -72,15 +75,18 @@ export function handleCreatorVisibilitySet(
 
 export function handleCreditsTrade(event: CreditsTradeEvent): void {
   let visibility = Visibility.load(
-    event.params.tradeEvent.visibilityId.toString()
+    Bytes.fromUTF8(event.params.tradeEvent.visibilityId)
   )
   if (!visibility) {
     visibility = Visibility.loadInBlock(
-      event.params.tradeEvent.visibilityId.toString()
+      Bytes.fromUTF8(event.params.tradeEvent.visibilityId)
     )
   }
   if (!visibility) {
-    visibility = new Visibility(event.params.tradeEvent.visibilityId.toString())
+    visibility = new Visibility(
+      Bytes.fromUTF8(event.params.tradeEvent.visibilityId)
+    )
+    visibility.visibilityId = event.params.tradeEvent.visibilityId
   }
   visibility.currentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
@@ -89,25 +95,31 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   visibility.save()
 
   let visibilityBalance = VisibilityBalance.load(
-    event.params.tradeEvent.visibilityId
-      .toString()
-      .concat('-')
-      .concat(event.params.tradeEvent.from.toHexString())
-  )
-  if (!visibilityBalance) {
-    visibilityBalance = VisibilityBalance.loadInBlock(
+    Bytes.fromUTF8(
       event.params.tradeEvent.visibilityId
         .toString()
         .concat('-')
         .concat(event.params.tradeEvent.from.toHexString())
     )
+  )
+  if (!visibilityBalance) {
+    visibilityBalance = VisibilityBalance.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.tradeEvent.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.tradeEvent.from.toHexString())
+      )
+    )
   }
   if (!visibilityBalance) {
     visibilityBalance = new VisibilityBalance(
-      event.params.tradeEvent.visibilityId
-        .toString()
-        .concat('-')
-        .concat(event.params.tradeEvent.from.toHexString())
+      Bytes.fromUTF8(
+        event.params.tradeEvent.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.tradeEvent.from.toHexString())
+      )
     )
     visibilityBalance.visibility = visibility.id
     visibilityBalance.userAddress = event.params.tradeEvent.from
@@ -161,37 +173,46 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
 }
 
 export function handleCreditsTransfer(event: CreditsTransferEvent): void {
-  let visibility = Visibility.load(event.params.visibilityId.toString())
+  let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
-    visibility = Visibility.loadInBlock(event.params.visibilityId.toString())
+    visibility = Visibility.loadInBlock(
+      Bytes.fromUTF8(event.params.visibilityId)
+    )
   }
   if (!visibility) {
-    visibility = new Visibility(event.params.visibilityId.toString())
+    visibility = new Visibility(Bytes.fromUTF8(event.params.visibilityId))
+    visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
   }
   visibility.save()
 
   let visibilityBalanceFrom = VisibilityBalance.load(
-    event.params.visibilityId
-      .toString()
-      .concat('-')
-      .concat(event.params.from.toHexString())
-  )
-  if (!visibilityBalanceFrom) {
-    visibilityBalanceFrom = VisibilityBalance.loadInBlock(
+    Bytes.fromUTF8(
       event.params.visibilityId
         .toString()
         .concat('-')
         .concat(event.params.from.toHexString())
     )
+  )
+  if (!visibilityBalanceFrom) {
+    visibilityBalanceFrom = VisibilityBalance.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.from.toHexString())
+      )
+    )
   }
   if (!visibilityBalanceFrom) {
     visibilityBalanceFrom = new VisibilityBalance(
-      event.params.visibilityId
-        .toString()
-        .concat('-')
-        .concat(event.params.from.toHexString())
+      Bytes.fromUTF8(
+        event.params.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.from.toHexString())
+      )
     )
     visibilityBalanceFrom.visibility = visibility.id
     visibilityBalanceFrom.userAddress = event.params.from
@@ -199,26 +220,32 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
   }
 
   let visibilityBalanceTo = VisibilityBalance.load(
-    event.params.visibilityId
-      .toString()
-      .concat('-')
-      .concat(event.params.to.toHexString())
-  )
-
-  if (!visibilityBalanceTo) {
-    visibilityBalanceTo = VisibilityBalance.loadInBlock(
+    Bytes.fromUTF8(
       event.params.visibilityId
         .toString()
         .concat('-')
         .concat(event.params.to.toHexString())
     )
+  )
+
+  if (!visibilityBalanceTo) {
+    visibilityBalanceTo = VisibilityBalance.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.to.toHexString())
+      )
+    )
   }
   if (!visibilityBalanceTo) {
     visibilityBalanceTo = new VisibilityBalance(
-      event.params.visibilityId
-        .toString()
-        .concat('-')
-        .concat(event.params.to.toHexString())
+      Bytes.fromUTF8(
+        event.params.visibilityId
+          .toString()
+          .concat('-')
+          .concat(event.params.to.toHexString())
+      )
     )
     visibilityBalanceTo.visibility = visibility.id
     visibilityBalanceTo.userAddress = event.params.to

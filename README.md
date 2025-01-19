@@ -31,13 +31,6 @@
     user
     balance
   }
-  creditsTradeVisibilityStats_collection(interval: hour) {
-    visibility {
-      id
-    }
-    timestamp
-    volume    
-  }
 }
 ```
 

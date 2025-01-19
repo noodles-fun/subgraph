@@ -110,13 +110,13 @@ describe('VisibilityServices', () => {
     assert.entityCount('VisibilityServiceExecution', 3)
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '2-11',
+      Bytes.fromUTF8('2-11').toHex(),
       'state',
       'REQUESTED'
     )
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '2-11',
+      Bytes.fromUTF8('2-11').toHex(),
       'requestData',
       'requestData21'
     )
@@ -125,13 +125,13 @@ describe('VisibilityServices', () => {
   test('ServiceExecutionAccepted', () => {
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '1-11',
+      Bytes.fromUTF8('1-11').toHex(),
       'state',
       'ACCEPTED'
     )
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '1-11',
+      Bytes.fromUTF8('1-11').toHex(),
       'responseData',
       'responseData11'
     )
@@ -148,7 +148,7 @@ describe('VisibilityServices', () => {
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '1-11',
+      Bytes.fromUTF8('1-11').toHex(),
       'state',
       'REFUNDED'
     )
@@ -164,7 +164,7 @@ describe('VisibilityServices', () => {
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '1-12',
+      Bytes.fromUTF8('1-12').toHex(),
       'state',
       'DISPUTED'
     )
@@ -182,7 +182,7 @@ describe('VisibilityServices', () => {
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '1-12',
+      Bytes.fromUTF8('1-12').toHex(),
       'state',
       'REFUNDED'
     )
@@ -198,7 +198,7 @@ describe('VisibilityServices', () => {
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '2-11',
+      Bytes.fromUTF8('2-11').toHex(),
       'state',
       'VALIDATED'
     )
@@ -211,17 +211,27 @@ describe('VisibilityServices', () => {
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
-      '2-11',
+      Bytes.fromUTF8('2-11').toHex(),
       'state',
       'VALIDATED'
     )
   })
 
   test('ServiceUpdated', () => {
-    assert.fieldEquals('VisibilityService', '1', 'enabled', 'true')
+    assert.fieldEquals(
+      'VisibilityService',
+      Bytes.fromUTF8('1').toHex(),
+      'enabled',
+      'true'
+    )
 
     let newServiceCreatedEvent = createServiceUpdatedEvent(servNonce1, false)
     handleServiceUpdated(newServiceCreatedEvent)
-    assert.fieldEquals('VisibilityService', '1', 'enabled', 'false')
+    assert.fieldEquals(
+      'VisibilityService',
+      Bytes.fromUTF8('1').toHex(),
+      'enabled',
+      'false'
+    )
   })
 })

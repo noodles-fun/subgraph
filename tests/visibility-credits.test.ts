@@ -27,7 +27,7 @@ let creator = Address.fromString('0x0000000000000000000000000000000000000001')
 let metadata = 'test'
 let from = Address.fromString('0x0000000000000000000000000000000000000002')
 let to = Address.fromString('0x0000000000000000000000000000000000000003')
-let visibilityId = 'x-test'
+let visibilityId = 'x-test' // 0x782d74657374
 let tradeCost = BigInt.fromI32(10000)
 let creatorFee = BigInt.fromI32(200)
 let referrerFee = BigInt.fromI32(125)
@@ -77,15 +77,30 @@ describe('VisibilityCredits', () => {
     handleCreatorVisibilitySet(newCreatorVisibilitySetEvent)
 
     assert.entityCount('Visibility', 1)
-    assert.fieldEquals('Visibility', 'x-test', 'currentPrice', '0')
-    assert.fieldEquals('Visibility', 'x-test', 'totalSupply', '0')
     assert.fieldEquals(
       'Visibility',
-      'x-test',
+      Bytes.fromUTF8('x-test').toHex(),
+      'currentPrice',
+      '0'
+    )
+    assert.fieldEquals(
+      'Visibility',
+      Bytes.fromUTF8('x-test').toHex(),
+      'totalSupply',
+      '0'
+    )
+    assert.fieldEquals(
+      'Visibility',
+      Bytes.fromUTF8('x-test').toHex(),
       'creator',
       '0x0000000000000000000000000000000000000001'
     )
-    assert.fieldEquals('Visibility', 'x-test', 'metadata', 'test')
+    assert.fieldEquals(
+      'Visibility',
+      Bytes.fromUTF8('x-test').toHex(),
+      'metadata',
+      'test'
+    )
   })
 
   test('CreditsTrade', () => {
@@ -114,11 +129,16 @@ describe('VisibilityCredits', () => {
       'userAddress',
       '0x0000000000000000000000000000000000000002'
     )
-    assert.fieldEquals('CreditsTrade', 'auto', 'visibility', 'x-test')
+    assert.fieldEquals(
+      'CreditsTrade',
+      'auto',
+      'visibility',
+      Bytes.fromUTF8('x-test').toHex()
+    )
 
     assert.fieldEquals(
       'Visibility',
-      'x-test',
+      Bytes.fromUTF8('x-test').toHex(),
       'currentPrice',
       newCurrentPrice.toString()
     )
@@ -126,7 +146,9 @@ describe('VisibilityCredits', () => {
     assert.entityCount('VisibilityBalance', 1)
     assert.fieldEquals(
       'VisibilityBalance',
-      'x-test-0x0000000000000000000000000000000000000002',
+      Bytes.fromUTF8(
+        'x-test-0x0000000000000000000000000000000000000002'
+      ).toHex(),
       'balance',
       '3'
     )
@@ -152,7 +174,9 @@ describe('VisibilityCredits', () => {
     assert.entityCount('VisibilityBalance', 1)
     assert.fieldEquals(
       'VisibilityBalance',
-      'x-test-0x0000000000000000000000000000000000000002',
+      Bytes.fromUTF8(
+        'x-test-0x0000000000000000000000000000000000000002'
+      ).toHex(),
       'balance',
       '0'
     )
@@ -190,13 +214,17 @@ describe('VisibilityCredits', () => {
 
     assert.fieldEquals(
       'VisibilityBalance',
-      'x-test-0x0000000000000000000000000000000000000002',
+      Bytes.fromUTF8(
+        'x-test-0x0000000000000000000000000000000000000002'
+      ).toHex(),
       'balance',
       '1'
     )
     assert.fieldEquals(
       'VisibilityBalance',
-      'x-test-0x0000000000000000000000000000000000000003',
+      Bytes.fromUTF8(
+        'x-test-0x0000000000000000000000000000000000000003'
+      ).toHex(),
       'balance',
       '2'
     )
