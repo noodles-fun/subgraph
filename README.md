@@ -76,7 +76,7 @@
     currentPrice
     totalSupply
   }
-  visibilityBalances {    
+  visibilityBalances(orderBy: balanceValue orderDirection: desc) {    
     visibility {
       visibilityId
     }
@@ -84,6 +84,7 @@
       id #userAddress
     }
     balance
+    balanceValue
   }
   creditsTrades {
     user {

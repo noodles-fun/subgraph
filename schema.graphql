@@ -38,6 +38,8 @@ type VisibilityBalance @entity {
   visibility: Visibility!
   user: User! # userAddress
   balance: BigInt! # uint256
+  balanceValue: BigDecimal! # ETH value
+  lastUpdated: BigInt! # uint256
 }
 
 type VisibilityService @entity {

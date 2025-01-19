@@ -9,6 +9,8 @@ import {
 } from 'matchstick-as/assembly/index'
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts'
 import {
+  BASE_PRICE,
+  computeNewCurrentPrice,
   handleCreatorFeeClaimed,
   handleCreatorVisibilitySet,
   handleCreditsTrade,
@@ -37,9 +39,7 @@ let referrer = Address.fromString('0x0000000000000000000000000000000000000004')
 let partner = Address.fromString('0x0000000000000000000000000000000000000005')
 let amount = BigInt.fromI32(3)
 let newTotalSupply = BigInt.fromI32(5)
-let newCurrentPrice = BigInt.fromU64(
-  10000000000000000 + 15000000000 * 5 ** 2 + 25000000000000 * 5
-)
+let newCurrentPrice = computeNewCurrentPrice(newTotalSupply)
 
 describe('VisibilityCredits', () => {
   beforeAll(() => {})
