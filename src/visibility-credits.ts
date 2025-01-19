@@ -18,6 +18,10 @@ import {
 } from '../generated/schema'
 // import { log } from 'matchstick-as'
 
+export function isZeroAddr(addr: Bytes): boolean {
+  return addr.toHexString() == '0x0000000000000000000000000000000000000000'
+}
+
 export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   const A = BigInt.fromU64(15000000000) // 0.000000015 ether;
   const B = BigInt.fromU64(25000000000000) // 0.000025 ether;
@@ -65,15 +69,19 @@ export function handleCreatorVisibilitySet(
     visibility.totalSupply = BigInt.fromI32(0)
   }
 
-  let creator = User.load(event.params.creator)
-  if (!creator) {
-    creator = User.loadInBlock(event.params.creator)
+  let creator: User | null = null
+  if (!isZeroAddr(event.params.creator)) {
+    User.load(event.params.creator)
+    if (!creator) {
+      creator = User.loadInBlock(event.params.creator)
+    }
+    if (!creator) {
+      creator = new User(event.params.creator)
+      creator.save()
+    }
   }
-  if (!creator) {
-    creator = new User(event.params.creator)
-    creator.save()
-  }
-  visibility.creator = creator.id
+
+  visibility.creator = creator ? creator.id : null
 
   visibility.metadata = event.params.metadata
   visibility.save()
@@ -83,8 +91,8 @@ export function handleCreatorVisibilitySet(
   let entity = new CreatorVisibilitySet(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
-  entity.visibility = visibility.id
-  entity.creator = creator.id
+  entity.visibility = event.params.visibilityId
+  entity.creator = event.params.creator
   entity.metadata = event.params.metadata
 
   entity.blockNumber = event.block.number
@@ -125,7 +133,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   }
 
   let referrer: User | null = null
-  if (event.params.tradeEvent.referrer != Bytes.fromI32(0)) {
+  if (!isZeroAddr(event.params.tradeEvent.referrer)) {
     referrer = User.load(event.params.tradeEvent.referrer)
     if (!referrer) {
       referrer = User.loadInBlock(event.params.tradeEvent.referrer)
@@ -137,7 +145,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   }
 
   let partner: User | null = null
-  if (event.params.tradeEvent.partner != Bytes.fromI32(0)) {
+  if (!isZeroAddr(event.params.tradeEvent.partner)) {
     partner = User.load(event.params.tradeEvent.partner)
     if (!partner) {
       partner = User.loadInBlock(event.params.tradeEvent.partner)
@@ -364,7 +372,7 @@ export function handleReferrerPartnerSet(event: ReferrerPartnerSetEvent): void {
   }
 
   let partner: User | null = null
-  if (event.params.partner != Bytes.fromI32(0)) {
+  if (!isZeroAddr(event.params.partner)) {
     partner = User.load(event.params.partner)
     if (!partner) {
       partner = User.loadInBlock(event.params.partner)

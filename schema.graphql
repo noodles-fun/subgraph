@@ -100,8 +100,8 @@ type CreditsTrade @entity(timeseries: true) {
 
 type CreatorVisibilitySet @entity(immutable: true) {
   id: Bytes!
-  visibility: Visibility!
-  creator: User! # address
+  visibility: String!
+  creator: Bytes! # address
   metadata: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!

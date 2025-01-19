@@ -17,8 +17,59 @@
 
 ```graphql
 {
+
+  #### Profile view #######
+
+  users {
+    id # userAddress
+
+    # holdings 
+    balances {
+      visibility {
+        visibilityId
+        creator {
+          id
+        }
+        metadata
+        totalSupply
+      }
+      balance
+    }
+
+    # as a creator 
+    visibilities {
+      visibilityId
+      metadata
+      trades {
+        creatorFee # all creator fees
+      }
+    }
+    claimedCreatorEarnings {
+      amount # claimed creator fees
+    }
+
+   # as a referral 
+   partner {
+    id 
+   }
+   referralTradesEarnings {
+      referrerFee
+   }    
+
+    # as a partner 
+    referrersAsPartner {
+      id # referrer addresses 
+    }
+    partnerTradesEarnings {
+      partnerFee
+    }
+  }
+  
+  #### Visibility view #######
+  
   visibilities {
     visibilityId
+    metadata
     creator {
       id # userAddress
     }

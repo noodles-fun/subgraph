@@ -164,8 +164,8 @@ describe('VisibilityCredits', () => {
         ethereum.Value.fromUnsignedBigInt(protocolFee),
         ethereum.Value.fromUnsignedBigInt(referrerFee),
         ethereum.Value.fromUnsignedBigInt(partnerFee),
-        ethereum.Value.fromAddress(referrer),
-        ethereum.Value.fromAddress(partner),
+        ethereum.Value.fromAddress(Address.zero()),
+        ethereum.Value.fromAddress(Address.zero()),
         ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0))
       ])
     )
