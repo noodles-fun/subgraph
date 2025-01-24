@@ -93,6 +93,7 @@ type CreatorFeeClaimed @entity(timeseries: true) {
 type CreditsTrade @entity(timeseries: true) {
   id: Int8!
   user: User! # userAddress
+  userTs: User! # timeseries don't support user field
   userInBigInt: BigInt! # uint256
   visibility: Visibility!
   amount: BigInt! # uint256
@@ -104,8 +105,8 @@ type CreditsTrade @entity(timeseries: true) {
   protocolFee: BigInt! # uint256
   referrerFee: BigInt! # uint256
   partnerFee: BigInt! # uint256
-  referrer: User # address
-  partner: User # address
+  referrer: User! # address - can be ZeroAddress user to support timeseries
+  partner: User! # address - can be ZeroAddress user to support timeseries
   newTotalSupply: BigInt! # uint256
   newCurrentPrice: BigInt! # uint256
   blockNumber: BigInt!
@@ -229,7 +230,7 @@ type ServiceUpdated @entity(immutable: true) {
 ###################
 ## Stats entities
 ###################
-
+#
 # type CreditsTradeAllStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
@@ -313,7 +314,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradeUserStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   userAddress: Bytes! @group(by: ["userAddress"])
+#   userTs: User! @group(by: ["userTs"]) # cannot use 'user' as it is a reserved keyword
 #   timestamp: Timestamp!
 #   totalBuyCost: BigInt! @aggregate(fn: "sum", arg: "buyCost")
 #   totalSellReimbursement: BigInt!
@@ -331,7 +332,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradeUserCumulativeStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   userAddress: Bytes! @group(by: ["userAddress"])
+#   userTs: User! @group(by: ["userTs"]) # cannot use 'user' as it is a reserved keyword
 #   totalBuyCost: BigInt! @aggregate(fn: "sum", arg: "buyCost", cumulative: true)
 #   totalSellReimbursement: BigInt!
 #     @aggregate(fn: "sum", arg: "sellReimbursement", cumulative: true)
@@ -354,7 +355,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradeReferrerStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   referrer: Bytes! @group(by: ["referrer"])
+#   referrer: User! @group(by: ["referrer"])
 #   timestamp: Timestamp!
 #   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
 #   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
@@ -370,7 +371,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradeReferrerCumulativeStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   referrer: Bytes! @group(by: ["referrer"])
+#   referrer: User! @group(by: ["referrer"])
 #   timestamp: Timestamp!
 #   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
 #   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
@@ -391,7 +392,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradePartnerStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   partner: Bytes! @group(by: ["partner"])
+#   partner: User! @group(by: ["partner"])
 #   timestamp: Timestamp!
 #   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
 #   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
@@ -407,7 +408,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreditsTradePartnerCumulativeStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
 #   id: Int8!
-#   partner: Bytes! @group(by: ["partner"])
+#   partner: User! @group(by: ["partner"])
 #   timestamp: Timestamp!
 #   volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
 #   totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
@@ -446,7 +447,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreatorFeeClaimedCreatorStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
 #   id: Int8!
-#   creator: Bytes! @group(by: ["creator"])
+#   creator: User! @group(by: ["creator"])
 #   timestamp: Timestamp!
 #   total: BigInt! @aggregate(fn: "sum", arg: "amount")
 #   count: BigInt! @aggregate(fn: "count", arg: "id")
@@ -456,7 +457,7 @@ type ServiceUpdated @entity(immutable: true) {
 # type CreatorFeeClaimedCreatorCumulativeStats
 #   @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
 #   id: Int8!
-#   creator: Bytes! @group(by: ["creator"])
+#   creator: User! @group(by: ["creator"])
 #   timestamp: Timestamp!
 #   total: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
 #   count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)

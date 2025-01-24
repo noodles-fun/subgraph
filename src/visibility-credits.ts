@@ -255,28 +255,30 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   }
 
   let referrer: User | null = null
-  if (!isZeroAddr(event.params.tradeEvent.referrer)) {
-    referrer = User.load(event.params.tradeEvent.referrer)
-    if (!referrer) {
-      referrer = User.loadInBlock(event.params.tradeEvent.referrer)
-    }
-    if (!referrer) {
-      referrer = new User(event.params.tradeEvent.referrer)
-      referrer.save()
-    }
+  //  can be ZeroAddress user to support timeseries
+  // if (!isZeroAddr(event.params.tradeEvent.referrer)) {
+  referrer = User.load(event.params.tradeEvent.referrer)
+  if (!referrer) {
+    referrer = User.loadInBlock(event.params.tradeEvent.referrer)
   }
+  if (!referrer) {
+    referrer = new User(event.params.tradeEvent.referrer)
+    referrer.save()
+  }
+  // }
 
   let partner: User | null = null
-  if (!isZeroAddr(event.params.tradeEvent.partner)) {
-    partner = User.load(event.params.tradeEvent.partner)
-    if (!partner) {
-      partner = User.loadInBlock(event.params.tradeEvent.partner)
-    }
-    if (!partner) {
-      partner = new User(event.params.tradeEvent.partner)
-      partner.save()
-    }
+  // can be ZeroAddress user to support timeseries
+  // if (!isZeroAddr(event.params.tradeEvent.partner)) {
+  partner = User.load(event.params.tradeEvent.partner)
+  if (!partner) {
+    partner = User.loadInBlock(event.params.tradeEvent.partner)
   }
+  if (!partner) {
+    partner = new User(event.params.tradeEvent.partner)
+    partner.save()
+  }
+  // }
 
   let visibilityBalance = VisibilityBalance.load(
     Bytes.fromUTF8(
@@ -323,6 +325,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
 
   let entity = new CreditsTrade('auto')
   entity.user = user.id
+  entity.userTs = user.id
   entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
   entity.amount = event.params.tradeEvent.amount
@@ -347,8 +350,8 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   entity.protocolFee = event.params.tradeEvent.protocolFee
   entity.referrerFee = event.params.tradeEvent.referrerFee
   entity.partnerFee = event.params.tradeEvent.partnerFee
-  entity.referrer = referrer ? referrer.id : null
-  entity.partner = partner ? partner.id : null
+  entity.referrer = referrer.id
+  entity.partner = partner.id
   entity.newTotalSupply = event.params.tradeEvent.newTotalSupply
   entity.newCurrentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
