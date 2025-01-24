@@ -1,17 +1,6 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_visibilityCredits",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "disputeResolver",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -70,12 +59,27 @@
   },
   {
     "inputs": [],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidCreator",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "InvalidExecutionState",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidInitialization",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotInitializing",
     "type": "error"
   },
   {
@@ -147,6 +151,19 @@
       }
     ],
     "name": "DefaultAdminTransferScheduled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "version",
+        "type": "uint64"
+      }
+    ],
+    "name": "Initialized",
     "type": "event"
   },
   {
@@ -564,6 +581,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "serviceNonce",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "creditsCostAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "createAndUpdateFromService",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "serviceType",
         "type": "string"
@@ -671,6 +706,45 @@
         "internalType": "uint256",
         "name": "serviceNonce",
         "type": "uint256"
+      }
+    ],
+    "name": "getService",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "serviceType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "visibilityId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "creditsCostAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "executionsNonce",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "serviceNonce",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -681,7 +755,7 @@
     "name": "getServiceExecution",
     "outputs": [
       {
-        "internalType": "enum VisibilityServices.ExecutionState",
+        "internalType": "enum IVisibilityServices.ExecutionState",
         "name": "state",
         "type": "uint8"
       },
@@ -694,6 +768,19 @@
         "internalType": "uint256",
         "name": "lastUpdateTimestamp",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVisibilityCreditsContract",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -739,6 +826,34 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "visibilityCredits",
+        "type": "address"
+      },
+      {
+        "internalType": "uint48",
+        "name": "adminDelay",
+        "type": "uint48"
+      },
+      {
+        "internalType": "address",
+        "name": "admin",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "disputeResolver",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -882,58 +997,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "services",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      },
-      {
-        "internalType": "string",
-        "name": "serviceType",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "visibilityId",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "creditsCostAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "executionsNonce",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "servicesNonce",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -984,19 +1047,6 @@
     "name": "validateServiceExecution",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "visibilityCredits",
-    "outputs": [
-      {
-        "internalType": "contract IVisibilityCredits",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

@@ -28,6 +28,7 @@ type Visibility @entity {
   metadata: String # string
   currentPrice: BigInt! # uint256
   totalSupply: BigInt! # uint256
+  claimableFeeBalance: BigInt! # uint256
   balances: [VisibilityBalance!]! @derivedFrom(field: "visibility")
   trades: [CreditsTrade!]! @derivedFrom(field: "visibility")
   services: [VisibilityService!]! @derivedFrom(field: "visibility")
@@ -58,6 +59,7 @@ type VisibilityServiceExecution @entity {
   service: VisibilityService!
   executionNonce: BigInt! # uint256
   requester: User! # address
+  canceler: User # address
   requestData: String! # string
   responseData: String # string
   cancelData: String # string

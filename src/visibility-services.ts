@@ -36,6 +36,7 @@ export function handleServiceCreated(event: ServiceCreatedEvent): void {
     visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
+    visibility.claimableFeeBalance = BigInt.fromI32(0)
   }
   visibility.save()
 
@@ -128,6 +129,16 @@ export function handleServiceExecutionCanceled(
   }
 
   if (serviceExecution != null) {
+    let canceler = User.load(event.params.from)
+    if (!canceler) {
+      canceler = User.loadInBlock(event.params.from)
+    }
+    if (!canceler) {
+      canceler = new User(event.params.from)
+      canceler.save()
+    }
+    serviceExecution.canceler = canceler.id
+
     serviceExecution.state = 'REFUNDED'
     serviceExecution.cancelData = event.params.cancelData
     serviceExecution.lastUpdated = event.block.timestamp

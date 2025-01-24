@@ -124,6 +124,21 @@ export function visibilityBalanceValue(
 }
 
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
+  /*
+  let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
+  if (!visibility) {
+    visibility = Visibility.loadInBlock(
+      Bytes.fromUTF8(event.params.visibilityId)
+    )
+  }
+  if (visibility) {
+    visibility.claimableFeeBalance = visibility.claimableFeeBalance.minus(
+      event.params.amount
+    )
+    visibility.save()
+  }
+    */
+
   let entity = new CreatorFeeClaimed('auto')
 
   let creator = User.load(event.params.creator)
@@ -159,6 +174,7 @@ export function handleCreatorVisibilitySet(
     visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
+    visibility.claimableFeeBalance = BigInt.fromI32(0)
   }
 
   let creator: User | null = null
@@ -208,11 +224,15 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
       Bytes.fromUTF8(event.params.tradeEvent.visibilityId)
     )
     visibility.visibilityId = event.params.tradeEvent.visibilityId
+    visibility.claimableFeeBalance = BigInt.fromI32(0)
   }
   visibility.currentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
   )
   visibility.totalSupply = event.params.tradeEvent.newTotalSupply
+  visibility.claimableFeeBalance = visibility.claimableFeeBalance.plus(
+    event.params.tradeEvent.creatorFee
+  )
   visibility.save()
 
   let user = User.load(event.params.tradeEvent.from)
@@ -343,6 +363,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     visibility.visibilityId = event.params.visibilityId
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
+    visibility.claimableFeeBalance = BigInt.fromI32(0)
   }
   visibility.save()
 
