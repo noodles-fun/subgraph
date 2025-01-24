@@ -72,6 +72,8 @@ type CreatorFeeClaimed @entity(timeseries: true) {
   id: Int8!
   creator: User! # address
   amount: BigInt! # uint256
+  visibility: Visibility! # visibilityId
+  from: User! # address
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

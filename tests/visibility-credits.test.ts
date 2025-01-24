@@ -51,23 +51,6 @@ describe('VisibilityCredits', () => {
   // For more test scenarios, see:
   // https://thegraph.com/docs/en/developer/matchstick/#write-a-unit-test
 
-  test('CreatorFeeClaimed', () => {
-    let newCreatorFeeClaimedEvent = createCreatorFeeClaimedEvent(
-      creator,
-      creatorFee
-    )
-    handleCreatorFeeClaimed(newCreatorFeeClaimedEvent)
-
-    assert.entityCount('CreatorFeeClaimed', 1)
-    assert.fieldEquals(
-      'CreatorFeeClaimed',
-      'auto',
-      'creator',
-      '0x0000000000000000000000000000000000000001'
-    )
-    assert.fieldEquals('CreatorFeeClaimed', 'auto', 'amount', '200')
-  })
-
   test('CreatorVisibilitySet', () => {
     let newCreatorVisibilitySetEvent = createCreatorVisibilitySetEvent(
       visibilityId,
@@ -180,6 +163,25 @@ describe('VisibilityCredits', () => {
       'balance',
       '0'
     )
+  })
+
+  test('CreatorFeeClaimed', () => {
+    let newCreatorFeeClaimedEvent = createCreatorFeeClaimedEvent(
+      creator,
+      creatorFee,
+      visibilityId,
+      from
+    )
+    handleCreatorFeeClaimed(newCreatorFeeClaimedEvent)
+
+    assert.entityCount('CreatorFeeClaimed', 1)
+    assert.fieldEquals(
+      'CreatorFeeClaimed',
+      'auto',
+      'creator',
+      '0x0000000000000000000000000000000000000001'
+    )
+    assert.fieldEquals('CreatorFeeClaimed', 'auto', 'amount', '200')
   })
 
   test('CreditsTransfer', () => {

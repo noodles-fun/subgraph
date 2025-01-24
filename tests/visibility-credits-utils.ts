@@ -10,7 +10,9 @@ import {
 
 export function createCreatorFeeClaimedEvent(
   creator: Address,
-  amount: BigInt
+  amount: BigInt,
+  visibilityId: string,
+  from: Address
 ): CreatorFeeClaimed {
   let creatorFeeClaimedEvent = changetype<CreatorFeeClaimed>(newMockEvent())
 
@@ -21,6 +23,15 @@ export function createCreatorFeeClaimedEvent(
   )
   creatorFeeClaimedEvent.parameters.push(
     new ethereum.EventParam('amount', ethereum.Value.fromUnsignedBigInt(amount))
+  )
+  creatorFeeClaimedEvent.parameters.push(
+    new ethereum.EventParam(
+      'visibilityId',
+      ethereum.Value.fromString(visibilityId)
+    )
+  )
+  creatorFeeClaimedEvent.parameters.push(
+    new ethereum.EventParam('from', ethereum.Value.fromAddress(from))
   )
 
   return creatorFeeClaimedEvent

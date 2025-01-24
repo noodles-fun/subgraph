@@ -124,40 +124,50 @@ export function visibilityBalanceValue(
 }
 
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
-  /*
   let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
     visibility = Visibility.loadInBlock(
       Bytes.fromUTF8(event.params.visibilityId)
     )
   }
+
   if (visibility) {
     visibility.claimableFeeBalance = visibility.claimableFeeBalance.minus(
       event.params.amount
     )
     visibility.save()
+
+    let entity = new CreatorFeeClaimed('auto')
+
+    let creator = User.load(event.params.creator)
+    if (!creator) {
+      creator = User.loadInBlock(event.params.creator)
+    }
+    if (!creator) {
+      creator = new User(event.params.creator)
+      creator.save()
+    }
+
+    let from = User.load(event.params.from)
+    if (!creator) {
+      from = User.loadInBlock(event.params.from)
+    }
+    if (!from) {
+      from = new User(event.params.from)
+      from.save()
+    }
+
+    entity.creator = creator.id
+    entity.amount = event.params.amount
+    entity.visibility = visibility.id
+    entity.from = from.id
+
+    entity.blockNumber = event.block.number
+    entity.blockTimestamp = event.block.timestamp
+    entity.transactionHash = event.transaction.hash
+
+    entity.save()
   }
-    */
-
-  let entity = new CreatorFeeClaimed('auto')
-
-  let creator = User.load(event.params.creator)
-  if (!creator) {
-    creator = User.loadInBlock(event.params.creator)
-  }
-  if (!creator) {
-    creator = new User(event.params.creator)
-    creator.save()
-  }
-  entity.creator = creator.id
-
-  entity.amount = event.params.amount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
 
 export function handleCreatorVisibilitySet(

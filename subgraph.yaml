@@ -25,7 +25,7 @@ dataSources:
         - name: VisibilityCredits
           file: ./abis/VisibilityCredits.json
       eventHandlers:
-        - event: CreatorFeeClaimed(indexed address,uint256)
+        - event: CreatorFeeClaimed(indexed address,uint256,string,address)
           handler: handleCreatorFeeClaimed
         - event: CreatorVisibilitySet(string,address,string)
           handler: handleCreatorVisibilitySet
