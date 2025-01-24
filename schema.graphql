@@ -7,6 +7,15 @@ enum ExecutionState {
   VALIDATED
 }
 
+type Sbt @entity(immutable: true) {
+  id: Bytes!
+  owner: User! # address
+  tokenId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type User @entity {
   id: Bytes! # address
   partner: User # address
@@ -17,6 +26,7 @@ type User @entity {
   referralTradesEarnings: [CreditsTrade!]! @derivedFrom(field: "referrer")
   requestedServices: [VisibilityServiceExecution!]!
     @derivedFrom(field: "requester")
+  sbt: [Sbt!]! @derivedFrom(field: "owner")
   trades: [CreditsTrade!]! @derivedFrom(field: "user")
   visibilities: [Visibility!]! @derivedFrom(field: "creator")
 }
