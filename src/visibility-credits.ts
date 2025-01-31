@@ -22,9 +22,9 @@ export function isZeroAddr(addr: Bytes): boolean {
   return addr.toHexString() == '0x0000000000000000000000000000000000000000'
 }
 
-export const A = BigInt.fromU64(15000000000) // 0.000000015 ether;
-export const B = BigInt.fromU64(25000000000000) // 0.000025 ether;
-export const BASE_PRICE = BigInt.fromU64(10000000000000000) // 0.01 ether;
+export const A = BigInt.fromU64(15)
+export const B = BigInt.fromU64(25_000)
+export const BASE_PRICE = BigInt.fromU64(10_000_000)
 
 export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   // newCurrentPrice = BASE_PRICE + (A * (totalSupply ** 2)) + (B * totalSupply);

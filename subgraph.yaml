@@ -8,7 +8,7 @@ dataSources:
     name: VisibilityCredits
     network: abstract-testnet
     source:
-      address: "0x00fbeC67F05fc30898670BB7510863216E4d2C95"
+      address: "0x25aaca9fD684CD710BB87bd8f87A2a9F20e5a269"
       abi: VisibilityCredits
       startBlock: 3312066
     mapping:
@@ -41,7 +41,7 @@ dataSources:
     network: abstract-testnet
     source:
       abi: VisibilityServices
-      address: "0xe9f915bE546BE513c880E39E515D52002ced7c7b"
+      address: "0x446aC2A937b7ef299402D97a9132CD2ce7Ff73b1"
       startBlock: 3312078
     mapping:
       kind: ethereum/events
@@ -81,7 +81,7 @@ dataSources:
     name: PointsSBT
     network: abstract-testnet
     source:
-      address: "0x1CCdaE8E383BeBea43D23DA0cbf1fC421fa485d0"
+      address: "0x53D523F98dFd0B4b8ADd9306D345d6e709AD6b18"
       abi: PointsSBT
       startBlock: 5008115
     mapping:
