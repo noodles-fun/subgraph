@@ -7,6 +7,15 @@ enum ExecutionState {
   VALIDATED
 }
 
+####################
+## Model entities ##
+####################
+
+type Protocol @entity {
+  id: Bytes! # Bytes(0)
+  totalValueLocked: BigDecimal! # ETH value
+}
+
 type Sbt @entity(immutable: true) {
   id: Bytes!
   owner: User! # address
@@ -31,6 +40,32 @@ type User @entity {
   visibilities: [Visibility!]! @derivedFrom(field: "creator")
 }
 
+type UserDayActivity @entity {
+  id: Bytes! # address && DD-MM-YYYY
+  user: User! # address
+  day: String! # DD-MM-YYYY
+  dayTimestamp: Int8! # ms timestamp
+  isActiveUser: Boolean! # if user trade > 0.03 ETH
+  volume: BigInt! # tradeCost - sum from user trades
+  protocolFees: BigInt! # protocolFees user sent
+  creatorFees: BigInt! # creatorFees user received
+  referrerFees: BigInt! # referrerFees user received
+  partnerFees: BigInt! # partnerFees user received
+  cursorId: BigInt!
+}
+
+type UsersDayActivity @entity {
+  id: Bytes! # DD-MM-YYYY
+  day: String!
+  dayTimestamp: Int8!
+  nbActiveUsers: BigInt!
+  volume: BigInt!
+  protocolFees: BigInt!
+  creatorFees: BigInt!
+  referrerFees: BigInt!
+  partnerFees: BigInt!
+}
+
 type Visibility @entity {
   id: Bytes! # visibilityId
   visibilityId: String! # visibilityId
@@ -49,8 +84,8 @@ type VisibilityBalance @entity {
   visibility: Visibility!
   user: User! # userAddress
   balance: BigInt! # uint256
-  balanceValue: BigDecimal! # ETH value
   lastUpdated: BigInt! # uint256
+  cursorId: BigInt!
 }
 
 type VisibilityService @entity {
@@ -78,37 +113,40 @@ type VisibilityServiceExecution @entity {
   lastUpdated: BigInt! # uint256
 }
 
-type CreatorFeeClaimed @entity(timeseries: true) {
+#####################
+## Events entities ##
+#####################
+
+type CreditsTrade @entity(timeseries: true) {
   id: Int8!
-  creator: User! # address
+  user: User! # userAddress
+  visibility: Visibility!
   amount: BigInt! # uint256
-  visibility: Visibility! # visibilityId
-  from: User! # address
+  isBuy: Boolean! # bool
+  buyCost: BigInt! # uint256
+  sellReimbursement: BigInt! # uint256
+  tradeValue: BigDecimal! # ETH value
+  tradeCost: BigInt! # uint256
+  creatorFee: BigInt! # uint256
+  protocolFee: BigInt! # uint256
+  referrerFee: BigInt! # uint256
+  partnerFee: BigInt! # uint256
+  referrer: User # address
+  partner: User # address
+  newTotalSupply: BigInt! # uint256
+  newCurrentPrice: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
   timestamp: Timestamp
 }
 
-type CreditsTrade @entity(timeseries: true) {
+type CreatorFeeClaimed @entity(immutable: true) {
   id: Int8!
-  user: User! # userAddress
-  userTs: User! # timeseries don't support user field
-  userInBigInt: BigInt! # uint256
-  visibility: Visibility!
+  creator: User! # address
   amount: BigInt! # uint256
-  isBuy: Boolean! # bool
-  buyCost: BigInt! # uint256
-  sellReimbursement: BigInt! # uint256
-  tradeCost: BigInt! # uint256
-  creatorFee: BigInt! # uint256
-  protocolFee: BigInt! # uint256
-  referrerFee: BigInt! # uint256
-  partnerFee: BigInt! # uint256
-  referrer: User! # address - can be ZeroAddress user to support timeseries
-  partner: User! # address - can be ZeroAddress user to support timeseries
-  newTotalSupply: BigInt! # uint256
-  newCurrentPrice: BigInt! # uint256
+  visibility: Visibility! # visibilityId
+  from: User! # address
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -228,7 +266,7 @@ type ServiceUpdated @entity(immutable: true) {
 }
 
 ###################
-## Stats entities
+# Stats entities ##
 ###################
 
 type CreditsTradeAllStats
@@ -242,27 +280,6 @@ type CreditsTradeAllStats
   referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
   partnerFees: BigInt! @aggregate(fn: "sum", arg: "partnerFee")
   count: BigInt! @aggregate(fn: "count", arg: "id")
-  userCount: BigInt! @aggregate(fn: "count", arg: "userInBigInt")
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeAllCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  protocolFees: BigInt!
-    @aggregate(fn: "sum", arg: "protocolFee", cumulative: true)
-  creatorFees: BigInt!
-    @aggregate(fn: "sum", arg: "creatorFee", cumulative: true)
-  referrerFees: BigInt!
-    @aggregate(fn: "sum", arg: "referrerFee", cumulative: true)
-  partnerFees: BigInt!
-    @aggregate(fn: "sum", arg: "partnerFee", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  userCount: BigInt!
-    @aggregate(fn: "count", arg: "userInBigInt", cumulative: true)
   lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
 }
 
@@ -282,184 +299,5 @@ type CreditsTradeVisibilityStats
   referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
   partnerFees: BigInt! @aggregate(fn: "sum", arg: "partnerFee")
   count: BigInt! @aggregate(fn: "count", arg: "id")
-  userCount: BigInt! @aggregate(fn: "count", arg: "userInBigInt")
   lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeVisibilityCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  visibility: Visibility! @group(by: ["visibility"])
-  timestamp: Timestamp!
-  minSupply: BigInt! @aggregate(fn: "min", arg: "newTotalSupply")
-  maxSupply: BigInt! @aggregate(fn: "max", arg: "newTotalSupply")
-  minPrice: BigInt! @aggregate(fn: "min", arg: "newCurrentPrice")
-  maxPrice: BigInt! @aggregate(fn: "max", arg: "newCurrentPrice")
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  protocolFees: BigInt!
-    @aggregate(fn: "sum", arg: "protocolFee", cumulative: true)
-  creatorFees: BigInt!
-    @aggregate(fn: "sum", arg: "creatorFee", cumulative: true)
-  referrerFees: BigInt!
-    @aggregate(fn: "sum", arg: "referrerFee", cumulative: true)
-  partnerFees: BigInt!
-    @aggregate(fn: "sum", arg: "partnerFee", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  userCount: BigInt!
-    @aggregate(fn: "count", arg: "userInBigInt", cumulative: true)
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeUserStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  userTs: User! @group(by: ["userTs"]) # cannot use 'user' as it is a reserved keyword
-  timestamp: Timestamp!
-  totalBuyCost: BigInt! @aggregate(fn: "sum", arg: "buyCost")
-  totalSellReimbursement: BigInt!
-    @aggregate(fn: "sum", arg: "sellReimbursement")
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
-  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
-  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
-  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
-  partnerFees: BigInt! @aggregate(fn: "sum", arg: "partnerFee")
-  count: BigInt! @aggregate(fn: "count", arg: "id")
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeUserCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  userTs: User! @group(by: ["userTs"]) # cannot use 'user' as it is a reserved keyword
-  totalBuyCost: BigInt! @aggregate(fn: "sum", arg: "buyCost", cumulative: true)
-  totalSellReimbursement: BigInt!
-    @aggregate(fn: "sum", arg: "sellReimbursement", cumulative: true)
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  protocolFees: BigInt!
-    @aggregate(fn: "sum", arg: "protocolFee", cumulative: true)
-  creatorFees: BigInt!
-    @aggregate(fn: "sum", arg: "creatorFee", cumulative: true)
-  referrerFees: BigInt!
-    @aggregate(fn: "sum", arg: "referrerFee", cumulative: true)
-  partnerFees: BigInt!
-    @aggregate(fn: "sum", arg: "partnerFee", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  unitCount: BigInt! @aggregate(fn: "max", arg: "1", cumulative: true)
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeReferrerStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  referrer: User! @group(by: ["referrer"])
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
-  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
-  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
-  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
-  partnerFees: BigInt! @aggregate(fn: "sum", arg: "partnerFee")
-  count: BigInt! @aggregate(fn: "count", arg: "id")
-  userCount: BigInt! @aggregate(fn: "count", arg: "userInBigInt")
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradeReferrerCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  referrer: User! @group(by: ["referrer"])
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  protocolFees: BigInt!
-    @aggregate(fn: "sum", arg: "protocolFee", cumulative: true)
-  creatorFees: BigInt!
-    @aggregate(fn: "sum", arg: "creatorFee", cumulative: true)
-  referrerFees: BigInt!
-    @aggregate(fn: "sum", arg: "referrerFee", cumulative: true)
-  partnerFees: BigInt!
-    @aggregate(fn: "sum", arg: "partnerFee", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  userCount: BigInt!
-    @aggregate(fn: "count", arg: "userInBigInt", cumulative: true)
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradePartnerStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  partner: User! @group(by: ["partner"])
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost")
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount")
-  protocolFees: BigInt! @aggregate(fn: "sum", arg: "protocolFee")
-  creatorFees: BigInt! @aggregate(fn: "sum", arg: "creatorFee")
-  referrerFees: BigInt! @aggregate(fn: "sum", arg: "referrerFee")
-  partnerFees: BigInt! @aggregate(fn: "sum", arg: "partnerFee")
-  count: BigInt! @aggregate(fn: "count", arg: "id")
-  userCount: BigInt! @aggregate(fn: "count", arg: "userInBigInt")
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreditsTradePartnerCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreditsTrade") {
-  id: Int8!
-  partner: User! @group(by: ["partner"])
-  timestamp: Timestamp!
-  volume: BigInt! @aggregate(fn: "sum", arg: "tradeCost", cumulative: true)
-  totalAmount: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  protocolFees: BigInt!
-    @aggregate(fn: "sum", arg: "protocolFee", cumulative: true)
-  creatorFees: BigInt!
-    @aggregate(fn: "sum", arg: "creatorFee", cumulative: true)
-  referrerFees: BigInt!
-    @aggregate(fn: "sum", arg: "referrerFee", cumulative: true)
-  partnerFees: BigInt!
-    @aggregate(fn: "sum", arg: "partnerFee", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  userCount: BigInt!
-    @aggregate(fn: "count", arg: "userInBigInt", cumulative: true)
-  lastTradeTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreatorFeeClaimedStats
-  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
-  id: Int8!
-  timestamp: Timestamp!
-  total: BigInt! @aggregate(fn: "sum", arg: "amount")
-  count: BigInt! @aggregate(fn: "count", arg: "id")
-  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreatorFeeClaimedCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
-  id: Int8!
-  timestamp: Timestamp!
-  total: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreatorFeeClaimedCreatorStats
-  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
-  id: Int8!
-  creator: User! @group(by: ["creator"])
-  timestamp: Timestamp!
-  total: BigInt! @aggregate(fn: "sum", arg: "amount")
-  count: BigInt! @aggregate(fn: "count", arg: "id")
-  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
-}
-
-type CreatorFeeClaimedCreatorCumulativeStats
-  @aggregation(intervals: ["hour", "day"], source: "CreatorFeeClaimed") {
-  id: Int8!
-  creator: User! @group(by: ["creator"])
-  timestamp: Timestamp!
-  total: BigInt! @aggregate(fn: "sum", arg: "amount", cumulative: true)
-  count: BigInt! @aggregate(fn: "count", arg: "id", cumulative: true)
-  lastClaimTimestamp: BigInt! @aggregate(fn: "max", arg: "blockTimestamp")
 }

@@ -30,7 +30,7 @@ let metadata = 'test'
 let from = Address.fromString('0x0000000000000000000000000000000000000002')
 let to = Address.fromString('0x0000000000000000000000000000000000000003')
 let visibilityId = 'x-test' // 0x782d74657374
-let tradeCost = BigInt.fromI32(10000)
+let tradeCost = BigInt.fromString('40000000000000000')
 let creatorFee = BigInt.fromI32(200)
 let referrerFee = BigInt.fromI32(125)
 let partnerFee = BigInt.fromI32(25)
@@ -163,6 +163,8 @@ describe('VisibilityCredits', () => {
       'balance',
       '0'
     )
+
+    // logStore()
   })
 
   test('CreatorFeeClaimed', () => {

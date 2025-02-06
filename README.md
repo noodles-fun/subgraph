@@ -11,7 +11,7 @@
 ## Subgraphs
 
 * Abstract mainnet: Coming soon
-* Abstract testnet: <https://thegraph.com/explorer/subgraphs/3Z4xUtmadHbNTYpzk9d4pPpHJnsA9FXsYjwJx1aQ9zAC?view=Query&chain=arbitrum-one>
+* Abstract testnet: Coming soon
 
 ### Query example
 
@@ -76,7 +76,7 @@
     currentPrice
     totalSupply
   }
-  visibilityBalances(orderBy: balanceValue orderDirection: desc) {    
+  visibilityBalances(orderBy: balance orderDirection: desc) {    
     visibility {
       visibilityId
     }
@@ -84,7 +84,6 @@
       id #userAddress
     }
     balance
-    balanceValue
   }
   creditsTrades {
     user {

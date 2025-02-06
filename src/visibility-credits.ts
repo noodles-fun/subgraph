@@ -11,12 +11,17 @@ import {
   CreatorVisibilitySet,
   CreditsTrade,
   CreditsTransfer,
+  Protocol,
   ReferrerPartnerSet,
   User,
+  UserDayActivity,
+  UsersDayActivity,
   Visibility,
   VisibilityBalance
 } from '../generated/schema'
 // import { log } from 'matchstick-as'
+
+const WEI_PER_ETHER = BigDecimal.fromString('1000000000000000000')
 
 export function isZeroAddr(addr: Bytes): boolean {
   return addr.toHexString() == '0x0000000000000000000000000000000000000000'
@@ -35,6 +40,7 @@ export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   return newCurrentPrice
 }
 
+/*
 export function visibilityBalanceValue(
   visibilityTotalSupply: BigInt,
   amount: BigInt
@@ -118,11 +124,9 @@ export function visibilityBalanceValue(
     .plus(A.times(sumSquares))
     .plus(B.times(sumFirstN))
 
-  const WEI_PER_ETHER = BigDecimal.fromString('1000000000000000000')
-
   return totalCost.toBigDecimal().div(WEI_PER_ETHER)
 }
-
+*/
 export function handleCreatorFeeClaimed(event: CreatorFeeClaimedEvent): void {
   let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
@@ -221,6 +225,10 @@ export function handleCreatorVisibilitySet(
 }
 
 export function handleCreditsTrade(event: CreditsTradeEvent): void {
+  /**
+   * 1. Visibility updates
+   */
+
   let visibility = Visibility.load(
     Bytes.fromUTF8(event.params.tradeEvent.visibilityId)
   )
@@ -245,6 +253,10 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   )
   visibility.save()
 
+  /**
+   * 2. Users retrieval
+   */
+
   let user = User.load(event.params.tradeEvent.from)
   if (!user) {
     user = User.loadInBlock(event.params.tradeEvent.from)
@@ -254,31 +266,41 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
     user.save()
   }
 
+  let creator: User | null = null
+  if (visibility.creator) {
+    creator = User.load(visibility.creator as Bytes)
+    if (!creator) {
+      creator = User.loadInBlock(visibility.creator as Bytes)
+    }
+  }
+
   let referrer: User | null = null
-  //  can be ZeroAddress user to support timeseries
-  // if (!isZeroAddr(event.params.tradeEvent.referrer)) {
-  referrer = User.load(event.params.tradeEvent.referrer)
-  if (!referrer) {
-    referrer = User.loadInBlock(event.params.tradeEvent.referrer)
+  if (!isZeroAddr(event.params.tradeEvent.referrer)) {
+    referrer = User.load(event.params.tradeEvent.referrer)
+    if (!referrer) {
+      referrer = User.loadInBlock(event.params.tradeEvent.referrer)
+    }
+    if (!referrer) {
+      referrer = new User(event.params.tradeEvent.referrer)
+      referrer.save()
+    }
   }
-  if (!referrer) {
-    referrer = new User(event.params.tradeEvent.referrer)
-    referrer.save()
-  }
-  // }
 
   let partner: User | null = null
-  // can be ZeroAddress user to support timeseries
-  // if (!isZeroAddr(event.params.tradeEvent.partner)) {
-  partner = User.load(event.params.tradeEvent.partner)
-  if (!partner) {
-    partner = User.loadInBlock(event.params.tradeEvent.partner)
+  if (!isZeroAddr(event.params.tradeEvent.partner)) {
+    partner = User.load(event.params.tradeEvent.partner)
+    if (!partner) {
+      partner = User.loadInBlock(event.params.tradeEvent.partner)
+    }
+    if (!partner) {
+      partner = new User(event.params.tradeEvent.partner)
+      partner.save()
+    }
   }
-  if (!partner) {
-    partner = new User(event.params.tradeEvent.partner)
-    partner.save()
-  }
-  // }
+
+  /**
+   * 3. Trader user balance update
+   */
 
   let visibilityBalance = VisibilityBalance.load(
     Bytes.fromUTF8(
@@ -310,23 +332,214 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
     visibilityBalance.visibility = visibility.id
     visibilityBalance.balance = BigInt.fromI32(0)
     visibilityBalance.user = user.id
+    visibilityBalance.cursorId = BigInt.fromString(
+      `${event.block.timestamp.toString()}${event.logIndex.toString()}1`
+    )
   }
 
   visibilityBalance.balance = event.params.tradeEvent.isBuy
     ? visibilityBalance.balance.plus(event.params.tradeEvent.amount)
     : visibilityBalance.balance.minus(event.params.tradeEvent.amount)
-  visibilityBalance.balanceValue = visibilityBalanceValue(
-    visibility.totalSupply,
-    visibilityBalance.balance
-  )
+
   visibilityBalance.lastUpdated = event.block.timestamp
 
   visibilityBalance.save()
 
+  /**
+   * 3. TVL update
+   */
+
+  let protocol = Protocol.load(Bytes.fromI32(0))
+  if (!protocol) {
+    protocol = Protocol.loadInBlock(Bytes.fromI32(0))
+  }
+  if (!protocol) {
+    protocol = new Protocol(Bytes.fromI32(0))
+    protocol.totalValueLocked = BigDecimal.fromString('0')
+  }
+
+  let tradeValue = event.params.tradeEvent.tradeCost
+    .toBigDecimal()
+    .div(WEI_PER_ETHER)
+
+  protocol.totalValueLocked = event.params.tradeEvent.isBuy
+    ? protocol.totalValueLocked.plus(tradeValue)
+    : protocol.totalValueLocked.minus(tradeValue)
+
+  protocol.save()
+
+  /**
+   * 4. Day activity updates
+   */
+
+  let date = new Date(event.block.timestamp.toI64() * 1000)
+  date.setUTCMilliseconds(0)
+  date.setUTCSeconds(0)
+  date.setUTCMinutes(0)
+  date.setUTCHours(0)
+  let day = date.getUTCDate()
+  let month = date.getUTCMonth() + 1
+  let year = date.getUTCFullYear()
+  let formattedDate = date.toISOString().split('T')[0]
+  let dayTimestamp = date.getTime()
+
+  let usersDayActivity = UsersDayActivity.load(Bytes.fromUTF8(formattedDate))
+  if (!usersDayActivity) {
+    usersDayActivity = UsersDayActivity.loadInBlock(
+      Bytes.fromUTF8(formattedDate)
+    )
+  }
+  if (!usersDayActivity) {
+    usersDayActivity = new UsersDayActivity(Bytes.fromUTF8(formattedDate))
+    usersDayActivity.day = formattedDate
+    usersDayActivity.dayTimestamp = dayTimestamp
+    usersDayActivity.nbActiveUsers = BigInt.fromI32(0)
+    usersDayActivity.volume = BigInt.fromI32(0)
+    usersDayActivity.protocolFees = BigInt.fromI32(0)
+    usersDayActivity.creatorFees = BigInt.fromI32(0)
+    usersDayActivity.referrerFees = BigInt.fromI32(0)
+    usersDayActivity.partnerFees = BigInt.fromI32(0)
+  }
+
+  if (user) {
+    let fee = event.params.tradeEvent.protocolFee
+    let userDate = user.id.concat(Bytes.fromUTF8(formattedDate))
+    let userDayActivity = UserDayActivity.load(userDate)
+    if (!userDayActivity) {
+      userDayActivity = UserDayActivity.loadInBlock(userDate)
+    }
+    if (!userDayActivity) {
+      userDayActivity = new UserDayActivity(userDate)
+      userDayActivity.user = user.id
+      userDayActivity.day = formattedDate
+      userDayActivity.dayTimestamp = dayTimestamp
+      userDayActivity.isActiveUser = false
+      userDayActivity.volume = BigInt.fromI32(0)
+      userDayActivity.protocolFees = BigInt.fromI32(0)
+      userDayActivity.creatorFees = BigInt.fromI32(0)
+      userDayActivity.referrerFees = BigInt.fromI32(0)
+      userDayActivity.partnerFees = BigInt.fromI32(0)
+
+      userDayActivity.cursorId = BigInt.fromString(
+        `${event.block.timestamp.toString()}${event.logIndex.toString()}2`
+      )
+    }
+    userDayActivity.volume = userDayActivity.volume.plus(
+      event.params.tradeEvent.tradeCost
+    )
+    usersDayActivity.volume = usersDayActivity.volume.plus(
+      event.params.tradeEvent.tradeCost
+    )
+    userDayActivity.protocolFees = userDayActivity.protocolFees.plus(fee)
+    usersDayActivity.protocolFees = usersDayActivity.protocolFees.plus(fee)
+    if (
+      event.params.tradeEvent.tradeCost.gt(
+        BigInt.fromString('30000000000000000')
+      )
+    ) {
+      if (!userDayActivity.isActiveUser) {
+        usersDayActivity.nbActiveUsers = usersDayActivity.nbActiveUsers.plus(
+          BigInt.fromI32(1)
+        )
+      }
+      userDayActivity.isActiveUser = true
+    }
+    userDayActivity.save()
+  }
+
+  if (creator) {
+    let fee = event.params.tradeEvent.creatorFee
+    let creatorDate = creator.id.concat(Bytes.fromUTF8(formattedDate))
+    let creatorDayActivity = UserDayActivity.load(creatorDate)
+    if (!creatorDayActivity) {
+      creatorDayActivity = UserDayActivity.loadInBlock(creatorDate)
+    }
+    if (!creatorDayActivity) {
+      creatorDayActivity = new UserDayActivity(creatorDate)
+      creatorDayActivity.user = creator.id
+      creatorDayActivity.day = formattedDate
+      creatorDayActivity.dayTimestamp = dayTimestamp
+      creatorDayActivity.isActiveUser = false
+      creatorDayActivity.volume = BigInt.fromI32(0)
+      creatorDayActivity.protocolFees = BigInt.fromI32(0)
+      creatorDayActivity.creatorFees = BigInt.fromI32(0)
+      creatorDayActivity.referrerFees = BigInt.fromI32(0)
+      creatorDayActivity.partnerFees = BigInt.fromI32(0)
+
+      creatorDayActivity.cursorId = BigInt.fromString(
+        `${event.block.timestamp.toString()}${event.logIndex.toString()}3`
+      )
+    }
+    creatorDayActivity.creatorFees = creatorDayActivity.creatorFees.plus(fee)
+    usersDayActivity.creatorFees = usersDayActivity.creatorFees.plus(fee)
+    creatorDayActivity.save()
+  }
+
+  if (referrer) {
+    let fee = event.params.tradeEvent.referrerFee
+    let referrerDate = referrer.id.concat(Bytes.fromUTF8(formattedDate))
+    let referrerDayActivity = UserDayActivity.load(referrerDate)
+    if (!referrerDayActivity) {
+      referrerDayActivity = UserDayActivity.loadInBlock(referrerDate)
+    }
+    if (!referrerDayActivity) {
+      referrerDayActivity = new UserDayActivity(referrerDate)
+      referrerDayActivity.user = referrer.id
+      referrerDayActivity.day = formattedDate
+      referrerDayActivity.dayTimestamp = dayTimestamp
+      referrerDayActivity.isActiveUser = false
+      referrerDayActivity.volume = BigInt.fromI32(0)
+      referrerDayActivity.protocolFees = BigInt.fromI32(0)
+      referrerDayActivity.creatorFees = BigInt.fromI32(0)
+      referrerDayActivity.referrerFees = BigInt.fromI32(0)
+      referrerDayActivity.partnerFees = BigInt.fromI32(0)
+
+      referrerDayActivity.cursorId = BigInt.fromString(
+        `${event.block.timestamp.toString()}${event.logIndex.toString()}4`
+      )
+    }
+    referrerDayActivity.referrerFees =
+      referrerDayActivity.referrerFees.plus(fee)
+    usersDayActivity.referrerFees = usersDayActivity.referrerFees.plus(fee)
+    referrerDayActivity.save()
+  }
+
+  if (partner) {
+    let fee = event.params.tradeEvent.partnerFee
+    let partnerDate = partner.id.concat(Bytes.fromUTF8(formattedDate))
+    let partnerDayActivity = UserDayActivity.load(partnerDate)
+    if (!partnerDayActivity) {
+      partnerDayActivity = UserDayActivity.loadInBlock(partnerDate)
+    }
+    if (!partnerDayActivity) {
+      partnerDayActivity = new UserDayActivity(partnerDate)
+      partnerDayActivity.user = partner.id
+      partnerDayActivity.day = formattedDate
+      partnerDayActivity.dayTimestamp = dayTimestamp
+      partnerDayActivity.isActiveUser = false
+      partnerDayActivity.volume = BigInt.fromI32(0)
+      partnerDayActivity.protocolFees = BigInt.fromI32(0)
+      partnerDayActivity.creatorFees = BigInt.fromI32(0)
+      partnerDayActivity.referrerFees = BigInt.fromI32(0)
+      partnerDayActivity.partnerFees = BigInt.fromI32(0)
+
+      partnerDayActivity.cursorId = BigInt.fromString(
+        `${event.block.timestamp.toString()}${event.logIndex.toString()}5`
+      )
+    }
+    partnerDayActivity.partnerFees = partnerDayActivity.partnerFees.plus(fee)
+    usersDayActivity.partnerFees = usersDayActivity.partnerFees.plus(fee)
+    partnerDayActivity.save()
+  }
+
+  usersDayActivity.save()
+
+  /**
+   * 5. CreditsTrade entity
+   */
+
   let entity = new CreditsTrade('auto')
   entity.user = user.id
-  entity.userTs = user.id
-  entity.userInBigInt = BigInt.fromByteArray(event.params.tradeEvent.from)
   entity.visibility = visibility.id
   entity.amount = event.params.tradeEvent.amount
   entity.isBuy = event.params.tradeEvent.isBuy
@@ -346,12 +559,13 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
         .minus(event.params.tradeEvent.partnerFee)
 
   entity.tradeCost = event.params.tradeEvent.tradeCost
+  entity.tradeValue = tradeValue
   entity.creatorFee = event.params.tradeEvent.creatorFee
   entity.protocolFee = event.params.tradeEvent.protocolFee
   entity.referrerFee = event.params.tradeEvent.referrerFee
   entity.partnerFee = event.params.tradeEvent.partnerFee
-  entity.referrer = referrer.id
-  entity.partner = partner.id
+  if (referrer) entity.referrer = referrer.id
+  if (partner) entity.partner = partner.id
   entity.newTotalSupply = event.params.tradeEvent.newTotalSupply
   entity.newCurrentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
@@ -428,6 +642,10 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     visibilityBalanceFrom.visibility = visibility.id
     visibilityBalanceFrom.user = from.id
     visibilityBalanceFrom.balance = BigInt.fromI32(0)
+
+    visibilityBalanceFrom.cursorId = BigInt.fromString(
+      `${event.block.timestamp.toString()}${event.logIndex.toString()}6`
+    )
   }
 
   let visibilityBalanceTo = VisibilityBalance.load(
@@ -461,24 +679,22 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     visibilityBalanceTo.visibility = visibility.id
     visibilityBalanceTo.user = to.id
     visibilityBalanceTo.balance = BigInt.fromI32(0)
+
+    visibilityBalanceTo.cursorId = BigInt.fromString(
+      `${event.block.timestamp.toString()}${event.logIndex.toString()}7`
+    )
   }
 
   visibilityBalanceFrom.balance = visibilityBalanceFrom.balance.minus(
     event.params.amount
   )
-  visibilityBalanceFrom.balanceValue = visibilityBalanceValue(
-    visibility.totalSupply,
-    visibilityBalanceFrom.balance
-  )
+
   visibilityBalanceFrom.lastUpdated = event.block.timestamp
 
   visibilityBalanceTo.balance = visibilityBalanceTo.balance.plus(
     event.params.amount
   )
-  visibilityBalanceTo.balanceValue = visibilityBalanceValue(
-    visibility.totalSupply,
-    visibilityBalanceTo.balance
-  )
+
   visibilityBalanceTo.lastUpdated = event.block.timestamp
 
   visibilityBalanceFrom.save()

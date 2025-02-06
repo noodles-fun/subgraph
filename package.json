@@ -1,17 +1,17 @@
 {
-  "version": "0.2.1",
-  "name": "noodles-subgraph-testnet",
+  "version": "0.3.2",
+  "name": "noodles-subgraph",
   "license": "UNLICENSED",
   "scripts": {
     "build": "graph clean && graph codegen && graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ noodles-subgraph-testnet",
-    "create-local": "graph create --node http://localhost:8020/ noodles-subgraph-testnet",
-    "remove-local": "graph remove --node http://localhost:8020/ noodles-subgraph-testnet",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 noodles-subgraph-testnet",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ noodles-abstract",
+    "create-local": "graph create --node http://localhost:8020/ noodles-subgraph",
+    "remove-local": "graph remove --node http://localhost:8020/ noodles-subgraph",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 noodles-subgraph",
     "test": "graph test -d"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.94.0",
+    "@graphprotocol/graph-cli": "^0.95.0",
     "@graphprotocol/graph-ts": "0.36.0"
   },
   "devDependencies": {
