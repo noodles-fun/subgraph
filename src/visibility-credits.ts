@@ -31,6 +31,9 @@ export const A = BigInt.fromU64(15)
 export const B = BigInt.fromU64(25_000)
 export const BASE_PRICE = BigInt.fromU64(10_000_000)
 
+export const ACTIVE_USER_TRADE_THRESHOLD =
+  BigInt.fromString('100000000000000000') // 0.1 ETH
+
 export function computeNewCurrentPrice(totalSupply: BigInt): BigInt {
   // newCurrentPrice = BASE_PRICE + (A * (totalSupply ** 2)) + (B * totalSupply);
   let newCurrentPrice = BASE_PRICE.plus(A.times(totalSupply.pow(2))).plus(
@@ -432,11 +435,8 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
     )
     userDayActivity.protocolFees = userDayActivity.protocolFees.plus(fee)
     usersDayActivity.protocolFees = usersDayActivity.protocolFees.plus(fee)
-    if (
-      event.params.tradeEvent.tradeCost.gt(
-        BigInt.fromString('30000000000000000')
-      )
-    ) {
+
+    if (event.params.tradeEvent.tradeCost.ge(ACTIVE_USER_TRADE_THRESHOLD)) {
       if (!userDayActivity.isActiveUser) {
         usersDayActivity.nbActiveUsers = usersDayActivity.nbActiveUsers.plus(
           BigInt.fromI32(1)
