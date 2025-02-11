@@ -91,6 +91,7 @@ type VisibilityBalance @entity {
 type VisibilityService @entity {
   id: Bytes! # serviceNonce
   serviceNonce: BigInt! # uint256
+  originator: User! # address
   visibility: Visibility!
   serviceType: String! # string
   creditsCostAmount: BigInt! # uint256
@@ -111,6 +112,8 @@ type VisibilityServiceExecution @entity {
   disputeData: String # string
   resolveData: String # string
   lastUpdated: BigInt! # uint256
+  informations: [ServiceExecutionInformation!]!
+    @derivedFrom(field: "serviceExecution")
 }
 
 #####################
@@ -220,6 +223,21 @@ type ServiceExecutionDisputed @entity(immutable: true) {
   serviceNonce: BigInt! # uint256
   executionNonce: BigInt! # uint256
   disputeData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionInformation @entity(immutable: true) {
+  id: Bytes!
+  serviceNonce: BigInt! # uint256
+  executionNonce: BigInt! # uint256
+  serviceExecution: VisibilityServiceExecution! # serviceNonce-executionNonce
+  user: User! # userAddress
+  fromCreator: Boolean! # bool
+  fromRequester: Boolean! # bool
+  fromDisputeResolver: Boolean! # bool
+  informationData: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

@@ -4,6 +4,7 @@ import {
   ServiceExecutionAccepted as ServiceExecutionAcceptedEvent,
   ServiceExecutionCanceled as ServiceExecutionCanceledEvent,
   ServiceExecutionDisputed as ServiceExecutionDisputedEvent,
+  ServiceExecutionInformation as ServiceExecutionInformationEvent,
   ServiceExecutionRequested as ServiceExecutionRequestedEvent,
   ServiceExecutionResolved as ServiceExecutionResolvedEvent,
   ServiceExecutionValidated as ServiceExecutionValidatedEvent,
@@ -14,6 +15,7 @@ import {
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
   ServiceExecutionDisputed,
+  ServiceExecutionInformation,
   ServiceExecutionRequested,
   ServiceExecutionResolved,
   ServiceExecutionValidated,
@@ -25,6 +27,15 @@ import {
 } from '../generated/schema'
 
 export function handleServiceCreated(event: ServiceCreatedEvent): void {
+  let user = User.load(event.params.originator)
+  if (!user) {
+    user = User.loadInBlock(event.params.originator)
+  }
+  if (!user) {
+    user = new User(event.params.originator)
+    user.save()
+  }
+
   let visibility = Visibility.load(Bytes.fromUTF8(event.params.visibilityId))
   if (!visibility) {
     visibility = Visibility.loadInBlock(
@@ -44,6 +55,7 @@ export function handleServiceCreated(event: ServiceCreatedEvent): void {
     Bytes.fromUTF8(event.params.nonce.toString())
   )
   visibilityService.serviceNonce = event.params.nonce
+  visibilityService.originator = user.id
   visibilityService.visibility = visibility.id
   visibilityService.serviceType = event.params.serviceType
   visibilityService.creditsCostAmount = event.params.creditsCostAmount
@@ -210,6 +222,57 @@ export function handleServiceExecutionDisputed(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+}
+
+export function handleServiceExecutionInformation(
+  event: ServiceExecutionInformationEvent
+): void {
+  let user = User.load(event.params.user)
+  if (!user) {
+    user = User.loadInBlock(event.params.user)
+  }
+  if (!user) {
+    user = new User(event.params.user)
+    user.save()
+  }
+
+  let serviceExecution = VisibilityServiceExecution.load(
+    Bytes.fromUTF8(
+      event.params.serviceNonce
+        .toString()
+        .concat('-')
+        .concat(event.params.executionNonce.toString())
+    )
+  )
+  if (!serviceExecution) {
+    VisibilityServiceExecution.loadInBlock(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
+    )
+  }
+
+  if (serviceExecution) {
+    let entity = new ServiceExecutionInformation(
+      event.transaction.hash.concatI32(event.logIndex.toI32())
+    )
+    entity.serviceNonce = event.params.serviceNonce
+    entity.executionNonce = event.params.executionNonce
+    entity.serviceExecution = serviceExecution.id
+    entity.user = user.id
+    entity.fromCreator = event.params.fromCreator
+    entity.fromRequester = event.params.fromRequester
+    entity.fromDisputeResolver = event.params.fromDisputeResolver
+    entity.informationData = event.params.informationData
+    entity.blockNumber = event.block.number
+    entity.blockTimestamp = event.block.timestamp
+    entity.transactionHash = event.transaction.hash
+
+    entity.save()
+  }
 }
 
 export function handleServiceExecutionRequested(

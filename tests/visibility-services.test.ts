@@ -13,6 +13,7 @@ import {
   createServiceExecutionAcceptedEvent,
   createServiceExecutionCanceledEvent,
   createServiceExecutionDisputedEvent,
+  createServiceExecutionInformationEvent,
   createServiceExecutionRequestedEvent,
   createServiceExecutionResolvedEvent,
   createServiceExecutionValidatedEvent,
@@ -23,6 +24,7 @@ import {
   handleServiceExecutionAccepted,
   handleServiceExecutionCanceled,
   handleServiceExecutionDisputed,
+  handleServiceExecutionInformation,
   handleServiceExecutionRequested,
   handleServiceExecutionResolved,
   handleServiceExecutionValidated,
@@ -50,6 +52,7 @@ let creditsCostAmount = BigInt.fromI32(5)
 describe('VisibilityServices', () => {
   beforeAll(() => {
     let newServiceCreatedEvent = createServiceCreatedEvent(
+      creator,
       servNonce1,
       serviceType1,
       visibilityId,
@@ -58,6 +61,7 @@ describe('VisibilityServices', () => {
     handleServiceCreated(newServiceCreatedEvent)
 
     newServiceCreatedEvent = createServiceCreatedEvent(
+      creator,
       servNonce2,
       serviceType2,
       visibilityId,
@@ -73,6 +77,19 @@ describe('VisibilityServices', () => {
         'requestData1'
       )
     handleServiceExecutionRequested(newServiceExecutionRequestedEvent)
+
+    let newServiceExecutionInformationEvent =
+      createServiceExecutionInformationEvent(
+        servNonce1,
+        execNonce11,
+        creator,
+        true,
+        false,
+        false,
+        'infoData11'
+      )
+    handleServiceExecutionInformation(newServiceExecutionInformationEvent)
+
     let newServiceExecutionAcceptedEvent = createServiceExecutionAcceptedEvent(
       servNonce1,
       execNonce11,
@@ -119,6 +136,15 @@ describe('VisibilityServices', () => {
       Bytes.fromUTF8('2-11').toHex(),
       'requestData',
       'requestData21'
+    )
+  })
+
+  test('ServiceExecutionInformation', () => {
+    assert.fieldEquals(
+      'ServiceExecutionInformation',
+      '0xa16081f360e3847006db660bae1c6d1b2e17ec2a01000000',
+      'informationData',
+      'infoData11'
     )
   })
 

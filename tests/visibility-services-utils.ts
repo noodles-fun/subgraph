@@ -5,6 +5,7 @@ import {
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
   ServiceExecutionDisputed,
+  ServiceExecutionInformation,
   ServiceExecutionRequested,
   ServiceExecutionResolved,
   ServiceExecutionValidated,
@@ -12,6 +13,7 @@ import {
 } from '../generated/VisibilityServices/VisibilityServices'
 
 export function createServiceCreatedEvent(
+  originator: Address,
   nonce: BigInt,
   serviceType: string,
   visibilityId: string,
@@ -20,6 +22,13 @@ export function createServiceCreatedEvent(
   let serviceCreatedEvent = changetype<ServiceCreated>(newMockEvent())
 
   serviceCreatedEvent.parameters = new Array()
+
+  serviceCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'originator',
+      ethereum.Value.fromAddress(originator)
+    )
+  )
 
   serviceCreatedEvent.parameters.push(
     new ethereum.EventParam('nonce', ethereum.Value.fromUnsignedBigInt(nonce))
@@ -141,6 +150,67 @@ export function createServiceExecutionDisputedEvent(
   )
 
   return serviceExecutionDisputedEvent
+}
+
+export function createServiceExecutionInformationEvent(
+  serviceNonce: BigInt,
+  executionNonce: BigInt,
+  user: Address,
+  fromCreator: boolean,
+  fromRequester: boolean,
+  fromDisputeResolver: boolean,
+  informationData: string
+): ServiceExecutionInformation {
+  let serviceExecutionInformationEvent =
+    changetype<ServiceExecutionInformation>(newMockEvent())
+
+  serviceExecutionInformationEvent.parameters = new Array()
+
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'serviceNonce',
+      ethereum.Value.fromUnsignedBigInt(serviceNonce)
+    )
+  )
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'executionNonce',
+      ethereum.Value.fromUnsignedBigInt(executionNonce)
+    )
+  )
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam('user', ethereum.Value.fromAddress(user))
+  )
+
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'fromCreator',
+      ethereum.Value.fromBoolean(fromCreator)
+    )
+  )
+
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'fromRequester',
+      ethereum.Value.fromBoolean(fromRequester)
+    )
+  )
+
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'fromDisputeResolver',
+      ethereum.Value.fromBoolean(fromDisputeResolver)
+    )
+  )
+
+  serviceExecutionInformationEvent.parameters.push(
+    new ethereum.EventParam(
+      'informationData',
+      ethereum.Value.fromString(informationData)
+    )
+  )
+
+  return serviceExecutionInformationEvent
 }
 
 export function createServiceExecutionRequestedEvent(
