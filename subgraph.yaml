@@ -1,16 +1,16 @@
 specVersion: 1.1.0
 indexerHints:
-  prune: auto
+  prune: never
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
     name: VisibilityCredits
-    network: abstract
+    network: abstract-testnet
     source:
-      address: "0x0DA6Bfd5d50edb31AF14C3A7820d28dB475Ec97D"
+      address: "0x25aaca9fD684CD710BB87bd8f87A2a9F20e5a269"
       abi: VisibilityCredits
-      startBlock: 1430938
+      startBlock: 5500360
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -38,11 +38,11 @@ dataSources:
       file: ./src/visibility-credits.ts
   - kind: ethereum
     name: VisibilityServices
-    network: abstract
+    network: abstract-testnet
     source:
       abi: VisibilityServices
-      address: "0x89e74F963e506D6921FF33cB75b53b963D7218bE"
-      startBlock: 1430938
+      address: "0x446aC2A937b7ef299402D97a9132CD2ce7Ff73b1"
+      startBlock: 5500360
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -89,11 +89,11 @@ dataSources:
       file: ./src/visibility-services.ts
   - kind: ethereum
     name: PointsSBT
-    network: abstract
+    network: abstract-testnet
     source:
-      address: "0xE19FF0aCF99fc4598003d34E8DF7b828849B9F48"
+      address: "0x53D523F98dFd0B4b8ADd9306D345d6e709AD6b18"
       abi: PointsSBT
-      startBlock: 1430938
+      startBlock: 5500360
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
