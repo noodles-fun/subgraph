@@ -7,6 +7,12 @@ enum ExecutionState {
   VALIDATED
 }
 
+enum PaymentType {
+  VISIBILITY_CREDITS # Legacy
+  ETH
+  ERC20 # further implementation
+}
+
 ####################
 ## Model entities ##
 ####################
@@ -74,7 +80,9 @@ type Visibility @entity {
   currentPrice: BigInt! # uint256
   totalSupply: BigInt! # uint256
   claimableFeeBalance: BigInt! # uint256
+  buyBackEthBalance: BigInt! # uint256
   balances: [VisibilityBalance!]! @derivedFrom(field: "visibility")
+  buyBacks: [BuyBack!]! @derivedFrom(field: "visibility")
   trades: [CreditsTrade!]! @derivedFrom(field: "visibility")
   services: [VisibilityService!]! @derivedFrom(field: "visibility")
 }
@@ -91,11 +99,14 @@ type VisibilityBalance @entity {
 type VisibilityService @entity {
   id: Bytes! # serviceNonce
   serviceNonce: BigInt! # uint256
+  paymentType: PaymentType! # enum
   originator: User! # address
   visibility: Visibility!
   serviceType: String! # string
   creditsCostAmount: BigInt! # uint256
   enabled: Boolean! # bool
+  weiCostAmount: BigInt! # uint256
+  buyBackCreditsShare: BigInt! # uint256
   executions: [VisibilityServiceExecution!]! @derivedFrom(field: "service")
 }
 
@@ -119,6 +130,26 @@ type VisibilityServiceExecution @entity {
 #####################
 ## Events entities ##
 #####################
+
+type BuyBack @entity(immutable: true) {
+  id: Bytes!
+  visibility: Visibility!
+  weiCost: BigInt! # uint256
+  creditsAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BuyBackPoolUpdated @entity(immutable: true) {
+  id: Bytes!
+  visibility: Visibility!
+  isBuyBack: Boolean! # bool
+  weiAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
 
 type CreditsTrade @entity(timeseries: true) {
   id: Int8!
@@ -186,12 +217,35 @@ type ReferrerPartnerSet @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type ServiceBuyBackUpdated @entity(immutable: true) {
+  id: Bytes!
+  nonce: BigInt! # uint256
+  buyBackCreditsShare: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type ServiceCreated @entity(immutable: true) {
   id: Bytes!
+  originator: User! # userAddress
   nonce: BigInt! # uint256
   serviceType: String! # string
   visibility: Visibility!
   creditsCostAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceWithETHCreated @entity(immutable: true) {
+  id: Bytes!
+  originator: User! # userAddress
+  nonce: BigInt! # uint256
+  serviceType: String! # string
+  visibility: Visibility!
+  buyBackCreditsShare: BigInt! # uint256
+  weiCostAmount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
