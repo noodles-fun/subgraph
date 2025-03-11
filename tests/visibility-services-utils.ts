@@ -9,6 +9,7 @@ import {
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
   ServiceExecutionDisputed,
+  ServiceExecutionEthPayment,
   ServiceExecutionInformation,
   ServiceExecutionRequested,
   ServiceExecutionResolved,
@@ -286,6 +287,45 @@ export function createServiceExecutionDisputedEvent(
   )
 
   return serviceExecutionDisputedEvent
+}
+
+export function createServiceExecutionEthPaymentEvent(
+  serviceNonce: BigInt,
+  protocolAmount: BigInt,
+  creatorAmount: BigInt,
+  buyBackAmount: BigInt
+): ServiceExecutionEthPayment {
+  let serviceExecutionEthPaymentEvent =
+    changetype<ServiceExecutionEthPayment>(newMockEvent())
+
+  serviceExecutionEthPaymentEvent.parameters = new Array()
+
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'serviceNonce',
+      ethereum.Value.fromUnsignedBigInt(serviceNonce)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'protocolAmount',
+      ethereum.Value.fromUnsignedBigInt(protocolAmount)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'creatorAmount',
+      ethereum.Value.fromUnsignedBigInt(creatorAmount)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'buyBackAmount',
+      ethereum.Value.fromUnsignedBigInt(buyBackAmount)
+    )
+  )
+
+  return serviceExecutionEthPaymentEvent
 }
 
 export function createServiceExecutionInformationEvent(

@@ -108,6 +108,8 @@ type VisibilityService @entity {
   weiCostAmount: BigInt! # uint256
   buyBackCreditsShare: BigInt! # uint256
   executions: [VisibilityServiceExecution!]! @derivedFrom(field: "service")
+  serviceExecutionEthPayments: [ServiceExecutionEthPayment!]!
+    @derivedFrom(field: "service")
 }
 
 type VisibilityServiceExecution @entity {
@@ -277,6 +279,17 @@ type ServiceExecutionDisputed @entity(immutable: true) {
   serviceNonce: BigInt! # uint256
   executionNonce: BigInt! # uint256
   disputeData: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ServiceExecutionEthPayment @entity(immutable: true) {
+  id: Bytes!
+  service: VisibilityService! # serviceNonce
+  protocolAmount: BigInt! # uint256
+  creatorAmount: BigInt! # uint256
+  buyBackAmount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

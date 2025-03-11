@@ -16,6 +16,7 @@ import {
   createServiceExecutionAcceptedEvent,
   createServiceExecutionCanceledEvent,
   createServiceExecutionDisputedEvent,
+  createServiceExecutionEthPaymentEvent,
   createServiceExecutionInformationEvent,
   createServiceExecutionRequestedEvent,
   createServiceExecutionResolvedEvent,
@@ -31,6 +32,7 @@ import {
   handleServiceExecutionAccepted,
   handleServiceExecutionCanceled,
   handleServiceExecutionDisputed,
+  handleServiceExecutionEthPayment,
   handleServiceExecutionInformation,
   handleServiceExecutionRequested,
   handleServiceExecutionResolved,
@@ -250,6 +252,16 @@ describe('VisibilityServices', () => {
     let newServiceExecutionValidatedEvent =
       createServiceExecutionValidatedEvent(servNonce2, execNonce21)
     handleServiceExecutionValidated(newServiceExecutionValidatedEvent)
+
+    let newEthPaymentEvent = createServiceExecutionEthPaymentEvent(
+      servNonce2,
+      BigInt.fromI32(1000),
+      BigInt.fromI32(1000),
+      BigInt.fromI32(1000)
+    )
+    handleServiceExecutionEthPayment(newEthPaymentEvent)
+
+    assert.entityCount('ServiceExecutionEthPayment', 1)
 
     let newBuyBackPoolEvent = createBuyBackPoolUpdatedEvent(
       visibilityId,

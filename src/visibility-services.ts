@@ -8,6 +8,7 @@ import {
   ServiceExecutionAccepted as ServiceExecutionAcceptedEvent,
   ServiceExecutionCanceled as ServiceExecutionCanceledEvent,
   ServiceExecutionDisputed as ServiceExecutionDisputedEvent,
+  ServiceExecutionEthPayment as ServiceExecutionEthPaymentEvent,
   ServiceExecutionInformation as ServiceExecutionInformationEvent,
   ServiceExecutionRequested as ServiceExecutionRequestedEvent,
   ServiceExecutionResolved as ServiceExecutionResolvedEvent,
@@ -23,6 +24,7 @@ import {
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
   ServiceExecutionDisputed,
+  ServiceExecutionEthPayment,
   ServiceExecutionInformation,
   ServiceExecutionRequested,
   ServiceExecutionResolved,
@@ -370,6 +372,34 @@ export function handleServiceExecutionDisputed(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+}
+
+export function handleServiceExecutionEthPayment(
+  event: ServiceExecutionEthPaymentEvent
+): void {
+  let visibilityService = VisibilityService.load(
+    Bytes.fromUTF8(event.params.serviceNonce.toString())
+  )
+  if (!visibilityService) {
+    visibilityService = VisibilityService.loadInBlock(
+      Bytes.fromUTF8(event.params.serviceNonce.toString())
+    )
+  }
+  if (visibilityService) {
+    let entity = new ServiceExecutionEthPayment(
+      event.transaction.hash.concatI32(event.logIndex.toI32())
+    )
+    entity.service = visibilityService.id
+    entity.protocolAmount = event.params.protocolAmount
+    entity.creatorAmount = event.params.creatorAmount
+    entity.buyBackAmount = event.params.buyBackAmount
+
+    entity.blockNumber = event.block.number
+    entity.blockTimestamp = event.block.timestamp
+    entity.transactionHash = event.transaction.hash
+
+    entity.save()
+  }
 }
 
 export function handleServiceExecutionInformation(
