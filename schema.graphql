@@ -125,6 +125,7 @@ type VisibilityServiceExecution @entity {
   disputeData: String # string
   resolveData: String # string
   lastUpdated: BigInt! # uint256
+  ethPayment: ServiceExecutionEthPayment
   informations: [ServiceExecutionInformation!]!
     @derivedFrom(field: "serviceExecution")
 }

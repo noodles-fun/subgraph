@@ -33,7 +33,9 @@ import {
   User,
   Visibility,
   VisibilityService,
-  VisibilityServiceExecution
+  VisibilityServiceExecution,
+  UserDayActivity,
+  UsersDayActivity
 } from '../generated/schema'
 
 export function handleBuyBack(event: BuyBackEvent): void {
@@ -399,6 +401,140 @@ export function handleServiceExecutionEthPayment(
     entity.transactionHash = event.transaction.hash
 
     entity.save()
+
+    ///////////////// Fees handlers /////////////////////
+
+    let visibility = Visibility.load(visibilityService.visibility)
+    if (!visibility) {
+      visibility = Visibility.loadInBlock(visibilityService.visibility)
+    }
+
+    let serviceExecution = VisibilityServiceExecution.load(
+      Bytes.fromUTF8(
+        event.params.serviceNonce
+          .toString()
+          .concat('-')
+          .concat(event.params.executionNonce.toString())
+      )
+    )
+    if (!serviceExecution) {
+      VisibilityServiceExecution.loadInBlock(
+        Bytes.fromUTF8(
+          event.params.serviceNonce
+            .toString()
+            .concat('-')
+            .concat(event.params.executionNonce.toString())
+        )
+      )
+    }
+
+    if (serviceExecution != null && visibility != null) {
+      let date = new Date(event.block.timestamp.toI64() * 1000)
+      date.setUTCMilliseconds(0)
+      date.setUTCSeconds(0)
+      date.setUTCMinutes(0)
+      date.setUTCHours(0)
+      let formattedDate = date.toISOString().split('T')[0]
+      let dayTimestamp = date.getTime()
+
+      let usersDayActivity = UsersDayActivity.load(
+        Bytes.fromUTF8(formattedDate)
+      )
+      if (!usersDayActivity) {
+        usersDayActivity = UsersDayActivity.loadInBlock(
+          Bytes.fromUTF8(formattedDate)
+        )
+      }
+      if (!usersDayActivity) {
+        usersDayActivity = new UsersDayActivity(Bytes.fromUTF8(formattedDate))
+        usersDayActivity.day = formattedDate
+        usersDayActivity.dayTimestamp = dayTimestamp
+        usersDayActivity.nbActiveUsers = BigInt.fromI32(0)
+        usersDayActivity.volume = BigInt.fromI32(0)
+        usersDayActivity.protocolFees = BigInt.fromI32(0)
+        usersDayActivity.creatorFees = BigInt.fromI32(0)
+        usersDayActivity.referrerFees = BigInt.fromI32(0)
+        usersDayActivity.partnerFees = BigInt.fromI32(0)
+      }
+
+      let user = User.load(serviceExecution.requester)
+      if (!user) {
+        user = User.loadInBlock(serviceExecution.requester)
+      }
+      if (!user) {
+        user = new User(serviceExecution.requester)
+        user.save()
+      }
+
+      if (user) {
+        let fee = event.params.protocolAmount
+        let userDate = user.id.concat(Bytes.fromUTF8(formattedDate))
+        let userDayActivity = UserDayActivity.load(userDate)
+        if (!userDayActivity) {
+          userDayActivity = UserDayActivity.loadInBlock(userDate)
+        }
+        if (!userDayActivity) {
+          userDayActivity = new UserDayActivity(userDate)
+          userDayActivity.user = user.id
+          userDayActivity.day = formattedDate
+          userDayActivity.dayTimestamp = dayTimestamp
+          userDayActivity.isActiveUser = false
+          userDayActivity.volume = BigInt.fromI32(0)
+          userDayActivity.protocolFees = BigInt.fromI32(0)
+          userDayActivity.creatorFees = BigInt.fromI32(0)
+          userDayActivity.referrerFees = BigInt.fromI32(0)
+          userDayActivity.partnerFees = BigInt.fromI32(0)
+
+          userDayActivity.cursorId = BigInt.fromString(
+            `${event.block.timestamp.toString()}${event.logIndex.toString()}2`
+          )
+        }
+        userDayActivity.protocolFees = userDayActivity.protocolFees.plus(fee)
+        usersDayActivity.protocolFees = usersDayActivity.protocolFees.plus(fee)
+
+        userDayActivity.save()
+      }
+
+      let creator: User | null = null
+      if (visibility.creator) {
+        creator = User.load(visibility.creator as Bytes)
+        if (!creator) {
+          creator = User.loadInBlock(visibility.creator as Bytes)
+        }
+      }
+
+      if (creator) {
+        let fee = event.params.creatorAmount
+        let creatorDate = creator.id.concat(Bytes.fromUTF8(formattedDate))
+        let creatorDayActivity = UserDayActivity.load(creatorDate)
+        if (!creatorDayActivity) {
+          creatorDayActivity = UserDayActivity.loadInBlock(creatorDate)
+        }
+        if (!creatorDayActivity) {
+          creatorDayActivity = new UserDayActivity(creatorDate)
+          creatorDayActivity.user = creator.id
+          creatorDayActivity.day = formattedDate
+          creatorDayActivity.dayTimestamp = dayTimestamp
+          creatorDayActivity.isActiveUser = false
+          creatorDayActivity.volume = BigInt.fromI32(0)
+          creatorDayActivity.protocolFees = BigInt.fromI32(0)
+          creatorDayActivity.creatorFees = BigInt.fromI32(0)
+          creatorDayActivity.referrerFees = BigInt.fromI32(0)
+          creatorDayActivity.partnerFees = BigInt.fromI32(0)
+
+          creatorDayActivity.cursorId = BigInt.fromString(
+            `${event.block.timestamp.toString()}${event.logIndex.toString()}3`
+          )
+        }
+        creatorDayActivity.creatorFees =
+          creatorDayActivity.creatorFees.plus(fee)
+        usersDayActivity.creatorFees = usersDayActivity.creatorFees.plus(fee)
+        creatorDayActivity.save()
+      }
+
+      serviceExecution.ethPayment = entity.id
+      serviceExecution.save()
+    }
   }
 }
 

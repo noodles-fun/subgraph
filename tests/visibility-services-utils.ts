@@ -291,6 +291,7 @@ export function createServiceExecutionDisputedEvent(
 
 export function createServiceExecutionEthPaymentEvent(
   serviceNonce: BigInt,
+  executionNonce: BigInt,
   protocolAmount: BigInt,
   creatorAmount: BigInt,
   buyBackAmount: BigInt
@@ -304,6 +305,12 @@ export function createServiceExecutionEthPaymentEvent(
     new ethereum.EventParam(
       'serviceNonce',
       ethereum.Value.fromUnsignedBigInt(serviceNonce)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'executionNonce',
+      ethereum.Value.fromUnsignedBigInt(executionNonce)
     )
   )
   serviceExecutionEthPaymentEvent.parameters.push(

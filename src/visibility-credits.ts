@@ -382,9 +382,6 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   date.setUTCSeconds(0)
   date.setUTCMinutes(0)
   date.setUTCHours(0)
-  let day = date.getUTCDate()
-  let month = date.getUTCMonth() + 1
-  let year = date.getUTCFullYear()
   let formattedDate = date.toISOString().split('T')[0]
   let dayTimestamp = date.getTime()
 

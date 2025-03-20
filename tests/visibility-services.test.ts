@@ -255,6 +255,7 @@ describe('VisibilityServices', () => {
 
     let newEthPaymentEvent = createServiceExecutionEthPaymentEvent(
       servNonce2,
+      execNonce21,
       BigInt.fromI32(1000),
       BigInt.fromI32(1000),
       BigInt.fromI32(1000)

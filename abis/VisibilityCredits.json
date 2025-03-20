@@ -130,6 +130,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "SlippageError",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -453,9 +458,9 @@
     "name": "A",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint64"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -466,9 +471,9 @@
     "name": "B",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -479,9 +484,9 @@
     "name": "BASE_PRICE",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -583,9 +588,9 @@
     "name": "PARTNER_FEE",
     "outputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint8"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -596,9 +601,9 @@
     "name": "PARTNER_REFERRER_BONUS",
     "outputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint8"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -1229,6 +1234,11 @@
       {
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minExpectedWei",
         "type": "uint256"
       },
       {
