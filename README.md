@@ -10,8 +10,8 @@
 
 ## Subgraphs
 
-* Abstract mainnet: [The Graph Network](https://thegraph.com/explorer/subgraphs/4aCcnWu6U2UhL6XrUKh2k45v4m8xVVF6S354PS2p9nsU?view=Query&chain=arbitrum-one) or [Goldsky](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-abstract/v1.0.0/gn)
-* Abstract testnet: [The Graph Network](https://thegraph.com/explorer/subgraphs/3Z4xUtmadHbNTYpzk9d4pPpHJnsA9FXsYjwJx1aQ9zAC?v=19&view=Query&chain=arbitrum-one) or [Goldsky](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-subgraph-testnet/0.3.3/gn)
+* Abstract mainnet: [The Graph Network - auto pruned](https://thegraph.com/explorer/subgraphs/4aCcnWu6U2UhL6XrUKh2k45v4m8xVVF6S354PS2p9nsU?view=Query&chain=arbitrum-one) or [Goldsky - no prune](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-abstract/v1.1.0/gn)
+* Abstract testnet: [The Graph Network - auto pruned](https://api.studio.thegraph.com/query/94473/noodles-subgraph-testnet/version/latest) or [Goldsky - no prune](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-subgraph-testnet/1.4.0/gn)
 
 ### Query example
 

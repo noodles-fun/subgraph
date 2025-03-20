@@ -192,6 +192,7 @@ export function handleCreatorVisibilitySet(
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
     visibility.claimableFeeBalance = BigInt.fromI32(0)
+    visibility.buyBackEthBalance = BigInt.fromI32(0)
   }
 
   let creator: User | null = null
@@ -246,6 +247,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
     )
     visibility.visibilityId = event.params.tradeEvent.visibilityId
     visibility.claimableFeeBalance = BigInt.fromI32(0)
+    visibility.buyBackEthBalance = BigInt.fromI32(0)
   }
   visibility.currentPrice = computeNewCurrentPrice(
     event.params.tradeEvent.newTotalSupply
@@ -380,9 +382,6 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   date.setUTCSeconds(0)
   date.setUTCMinutes(0)
   date.setUTCHours(0)
-  let day = date.getUTCDate()
-  let month = date.getUTCMonth() + 1
-  let year = date.getUTCFullYear()
   let formattedDate = date.toISOString().split('T')[0]
   let dayTimestamp = date.getTime()
 
@@ -591,6 +590,7 @@ export function handleCreditsTransfer(event: CreditsTransferEvent): void {
     visibility.currentPrice = BigInt.fromI32(0)
     visibility.totalSupply = BigInt.fromI32(0)
     visibility.claimableFeeBalance = BigInt.fromI32(0)
+    visibility.buyBackEthBalance = BigInt.fromI32(0)
   }
   visibility.save()
 

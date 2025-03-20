@@ -1,16 +1,102 @@
 import { newMockEvent } from 'matchstick-as'
 import { ethereum, BigInt, Address, Bytes } from '@graphprotocol/graph-ts'
 import {
+  BuyBack,
+  BuyBackPoolUpdated,
+  ServiceBuyBackUpdated,
   ServiceCreated,
+  ServiceWithETHCreated,
   ServiceExecutionAccepted,
   ServiceExecutionCanceled,
   ServiceExecutionDisputed,
+  ServiceExecutionEthPayment,
   ServiceExecutionInformation,
   ServiceExecutionRequested,
   ServiceExecutionResolved,
   ServiceExecutionValidated,
   ServiceUpdated
 } from '../generated/VisibilityServices/VisibilityServices'
+
+export function createBuyBackEvent(
+  visibilityId: string,
+  totalWeiCost: BigInt,
+  creditsAmount: BigInt
+): BuyBack {
+  let buyBackEvent = changetype<BuyBack>(newMockEvent())
+
+  buyBackEvent.parameters = new Array()
+
+  buyBackEvent.parameters.push(
+    new ethereum.EventParam(
+      'visibilityId',
+      ethereum.Value.fromString(visibilityId)
+    )
+  )
+  buyBackEvent.parameters.push(
+    new ethereum.EventParam(
+      'totalWeiCost',
+      ethereum.Value.fromUnsignedBigInt(totalWeiCost)
+    )
+  )
+  buyBackEvent.parameters.push(
+    new ethereum.EventParam(
+      'creditsAmount',
+      ethereum.Value.fromUnsignedBigInt(creditsAmount)
+    )
+  )
+
+  return buyBackEvent
+}
+
+export function createBuyBackPoolUpdatedEvent(
+  visibilityId: string,
+  isBuyBack: boolean,
+  weiAmount: BigInt
+): BuyBackPoolUpdated {
+  let buyBackPoolUpdatedEvent = changetype<BuyBackPoolUpdated>(newMockEvent())
+
+  buyBackPoolUpdatedEvent.parameters = new Array()
+
+  buyBackPoolUpdatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'visibilityId',
+      ethereum.Value.fromString(visibilityId)
+    )
+  )
+  buyBackPoolUpdatedEvent.parameters.push(
+    new ethereum.EventParam('isBuyBack', ethereum.Value.fromBoolean(isBuyBack))
+  )
+  buyBackPoolUpdatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'weiAmount',
+      ethereum.Value.fromUnsignedBigInt(weiAmount)
+    )
+  )
+
+  return buyBackPoolUpdatedEvent
+}
+
+export function createServiceBuyBackUpdatedEvent(
+  nonce: BigInt,
+  buyBackCreditsShare: BigInt
+): ServiceBuyBackUpdated {
+  let serviceBuyBackUpdatedEvent =
+    changetype<ServiceBuyBackUpdated>(newMockEvent())
+
+  serviceBuyBackUpdatedEvent.parameters = new Array()
+
+  serviceBuyBackUpdatedEvent.parameters.push(
+    new ethereum.EventParam('nonce', ethereum.Value.fromUnsignedBigInt(nonce))
+  )
+  serviceBuyBackUpdatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'buyBackCreditsShare',
+      ethereum.Value.fromUnsignedBigInt(buyBackCreditsShare)
+    )
+  )
+
+  return serviceBuyBackUpdatedEvent
+}
 
 export function createServiceCreatedEvent(
   originator: Address,
@@ -53,6 +139,57 @@ export function createServiceCreatedEvent(
   )
 
   return serviceCreatedEvent
+}
+
+export function createServiceWithETHCreatedEvent(
+  originator: Address,
+  nonce: BigInt,
+  serviceType: string,
+  visibilityId: string,
+  buyBackCreditsShare: BigInt,
+  weiCostAmount: BigInt
+): ServiceWithETHCreated {
+  let serviceWithETHCreatedEvent =
+    changetype<ServiceWithETHCreated>(newMockEvent())
+
+  serviceWithETHCreatedEvent.parameters = new Array()
+
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'originator',
+      ethereum.Value.fromAddress(originator)
+    )
+  )
+
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam('nonce', ethereum.Value.fromUnsignedBigInt(nonce))
+  )
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'serviceType',
+      ethereum.Value.fromString(serviceType)
+    )
+  )
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'visibilityId',
+      ethereum.Value.fromString(visibilityId)
+    )
+  )
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'buyBackCreditsShare',
+      ethereum.Value.fromUnsignedBigInt(buyBackCreditsShare)
+    )
+  )
+  serviceWithETHCreatedEvent.parameters.push(
+    new ethereum.EventParam(
+      'weiCostAmount',
+      ethereum.Value.fromUnsignedBigInt(weiCostAmount)
+    )
+  )
+
+  return serviceWithETHCreatedEvent
 }
 
 export function createServiceExecutionAcceptedEvent(
@@ -150,6 +287,52 @@ export function createServiceExecutionDisputedEvent(
   )
 
   return serviceExecutionDisputedEvent
+}
+
+export function createServiceExecutionEthPaymentEvent(
+  serviceNonce: BigInt,
+  executionNonce: BigInt,
+  protocolAmount: BigInt,
+  creatorAmount: BigInt,
+  buyBackAmount: BigInt
+): ServiceExecutionEthPayment {
+  let serviceExecutionEthPaymentEvent =
+    changetype<ServiceExecutionEthPayment>(newMockEvent())
+
+  serviceExecutionEthPaymentEvent.parameters = new Array()
+
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'serviceNonce',
+      ethereum.Value.fromUnsignedBigInt(serviceNonce)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'executionNonce',
+      ethereum.Value.fromUnsignedBigInt(executionNonce)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'protocolAmount',
+      ethereum.Value.fromUnsignedBigInt(protocolAmount)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'creatorAmount',
+      ethereum.Value.fromUnsignedBigInt(creatorAmount)
+    )
+  )
+  serviceExecutionEthPaymentEvent.parameters.push(
+    new ethereum.EventParam(
+      'buyBackAmount',
+      ethereum.Value.fromUnsignedBigInt(buyBackAmount)
+    )
+  )
+
+  return serviceExecutionEthPaymentEvent
 }
 
 export function createServiceExecutionInformationEvent(

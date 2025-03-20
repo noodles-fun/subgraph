@@ -9,28 +9,37 @@ import {
 } from 'matchstick-as/assembly/index'
 import { BigInt, Address, Bytes } from '@graphprotocol/graph-ts'
 import {
+  createBuyBackEvent,
+  createBuyBackPoolUpdatedEvent,
+  createServiceBuyBackUpdatedEvent,
   createServiceCreatedEvent,
   createServiceExecutionAcceptedEvent,
   createServiceExecutionCanceledEvent,
   createServiceExecutionDisputedEvent,
+  createServiceExecutionEthPaymentEvent,
   createServiceExecutionInformationEvent,
   createServiceExecutionRequestedEvent,
   createServiceExecutionResolvedEvent,
   createServiceExecutionValidatedEvent,
-  createServiceUpdatedEvent
+  createServiceUpdatedEvent,
+  createServiceWithETHCreatedEvent
 } from './visibility-services-utils'
 import {
+  handleBuyBack,
+  handleBuyBackPoolUpdated,
+  handleServiceBuyBackUpdated,
   handleServiceCreated,
   handleServiceExecutionAccepted,
   handleServiceExecutionCanceled,
   handleServiceExecutionDisputed,
+  handleServiceExecutionEthPayment,
   handleServiceExecutionInformation,
   handleServiceExecutionRequested,
   handleServiceExecutionResolved,
   handleServiceExecutionValidated,
-  handleServiceUpdated
+  handleServiceUpdated,
+  handleServiceWithETHCreated
 } from '../src/visibility-services'
-import { ServiceCreated } from '../generated/schema'
 
 let creator = Address.fromString('0x0000000000000000000000000000000000000001')
 let requester1 = Address.fromString(
@@ -48,6 +57,8 @@ let serviceType1 = 'x-post1'
 let serviceType2 = 'x-post2'
 let visibilityId = 'x-test'
 let creditsCostAmount = BigInt.fromI32(5)
+let buyBackCreditsShare = BigInt.fromI32(500000)
+let weiCostAmount = BigInt.fromI32(55555555)
 
 describe('VisibilityServices', () => {
   beforeAll(() => {
@@ -60,14 +71,21 @@ describe('VisibilityServices', () => {
     )
     handleServiceCreated(newServiceCreatedEvent)
 
-    newServiceCreatedEvent = createServiceCreatedEvent(
+    let newServiceWithEthCreatedEvent = createServiceWithETHCreatedEvent(
       creator,
       servNonce2,
       serviceType2,
       visibilityId,
-      creditsCostAmount.plus(BigInt.fromI32(1))
+      buyBackCreditsShare,
+      weiCostAmount
     )
-    handleServiceCreated(newServiceCreatedEvent)
+    handleServiceWithETHCreated(newServiceWithEthCreatedEvent)
+
+    let newServiceBuyBackUpdatedEvent = createServiceBuyBackUpdatedEvent(
+      servNonce2,
+      buyBackCreditsShare.plus(BigInt.fromI32(1))
+    )
+    handleServiceBuyBackUpdated(newServiceBuyBackUpdatedEvent)
 
     let newServiceExecutionRequestedEvent =
       createServiceExecutionRequestedEvent(
@@ -230,10 +248,28 @@ describe('VisibilityServices', () => {
     )
   })
 
-  test('ServiceExecutionValidated', () => {
+  test('ServiceExecutionValidated & Buy Back', () => {
     let newServiceExecutionValidatedEvent =
       createServiceExecutionValidatedEvent(servNonce2, execNonce21)
     handleServiceExecutionValidated(newServiceExecutionValidatedEvent)
+
+    let newEthPaymentEvent = createServiceExecutionEthPaymentEvent(
+      servNonce2,
+      execNonce21,
+      BigInt.fromI32(1000),
+      BigInt.fromI32(1000),
+      BigInt.fromI32(1000)
+    )
+    handleServiceExecutionEthPayment(newEthPaymentEvent)
+
+    assert.entityCount('ServiceExecutionEthPayment', 1)
+
+    let newBuyBackPoolEvent = createBuyBackPoolUpdatedEvent(
+      visibilityId,
+      false,
+      weiCostAmount
+    )
+    handleBuyBackPoolUpdated(newBuyBackPoolEvent)
 
     assert.fieldEquals(
       'VisibilityServiceExecution',
@@ -241,6 +277,17 @@ describe('VisibilityServices', () => {
       'state',
       'VALIDATED'
     )
+
+    assert.entityCount('BuyBackPoolUpdated', 1)
+
+    let newBuyBackEvent = createBuyBackEvent(
+      visibilityId,
+      weiCostAmount,
+      BigInt.fromI32(1000)
+    )
+    handleBuyBack(newBuyBackEvent)
+
+    assert.entityCount('BuyBack', 1)
   })
 
   test('ServiceUpdated', () => {
