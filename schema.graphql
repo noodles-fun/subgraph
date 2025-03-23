@@ -82,6 +82,7 @@ type Visibility @entity {
   totalSupply: BigInt! # uint256
   claimableFeeBalance: BigInt! # uint256
   buyBackEthBalance: BigInt! # uint256
+  linkTimestamp: BigInt # uint256
   balances: [VisibilityBalance!]! @derivedFrom(field: "visibility")
   buyBacks: [BuyBack!]! @derivedFrom(field: "visibility")
   trades: [CreditsTrade!]! @derivedFrom(field: "visibility")

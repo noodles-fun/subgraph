@@ -208,8 +208,9 @@ export function handleCreatorVisibilitySet(
   }
 
   visibility.creator = creator ? creator.id : null
-
   visibility.metadata = event.params.metadata
+  visibility.linkTimestamp = event.block.timestamp
+
   visibility.save()
 
   /////
