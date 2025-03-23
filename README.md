@@ -11,7 +11,7 @@
 ## Subgraphs
 
 * Abstract mainnet: [The Graph Network - auto pruned](https://thegraph.com/explorer/subgraphs/4aCcnWu6U2UhL6XrUKh2k45v4m8xVVF6S354PS2p9nsU?view=Query&chain=arbitrum-one) or [Goldsky - no prune](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-abstract/v1.1.0/gn)
-* Abstract testnet: [The Graph Network - auto pruned](https://api.studio.thegraph.com/query/94473/noodles-subgraph-testnet/version/latest) or [Goldsky - no prune](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-subgraph-testnet/1.4.0/gn)
+* Abstract testnet: [The Graph Network - auto pruned](https://api.studio.thegraph.com/query/94473/noodles-subgraph-testnet/version/latest) or [Goldsky - no prune](https://api.goldsky.com/api/public/project_cm3yp5wtflxub01wra3g2a0bc/subgraphs/noodles-subgraph-testnet/v1.4.1/gn)
 
 ### Query example
 

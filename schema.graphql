@@ -39,6 +39,7 @@ type User @entity {
   partnerTradesEarnings: [CreditsTrade!]! @derivedFrom(field: "partner")
   referrersAsPartner: [User!]! @derivedFrom(field: "partner")
   referralTradesEarnings: [CreditsTrade!]! @derivedFrom(field: "referrer")
+  createdServices: [VisibilityService!]! @derivedFrom(field: "originator")
   requestedServices: [VisibilityServiceExecution!]!
     @derivedFrom(field: "requester")
   sbt: [Sbt!]! @derivedFrom(field: "owner")
