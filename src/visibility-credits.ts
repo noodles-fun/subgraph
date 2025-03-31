@@ -571,6 +571,7 @@ export function handleCreditsTrade(event: CreditsTradeEvent): void {
   let entity = new CreditsTrade('auto')
   entity.user = user.id
   entity.visibility = visibility.id
+  entity.balance = visibilityBalance.id
   entity.amount = event.params.tradeEvent.amount
   entity.isBuy = event.params.tradeEvent.isBuy
   entity.buyCost = event.params.tradeEvent.isBuy

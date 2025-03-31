@@ -96,6 +96,7 @@ type VisibilityBalance @entity {
   balance: BigInt! # uint256
   lastUpdated: BigInt! # uint256
   cursorId: BigInt!
+  trades: [CreditsTrade!]! @derivedFrom(field: "balance")
 }
 
 type VisibilityService @entity {
@@ -160,6 +161,7 @@ type CreditsTrade @entity(timeseries: true) {
   id: Int8!
   user: User! # userAddress
   visibility: Visibility!
+  balance: VisibilityBalance! # visibilityId-userAddress
   amount: BigInt! # uint256
   isBuy: Boolean! # bool
   buyCost: BigInt! # uint256
